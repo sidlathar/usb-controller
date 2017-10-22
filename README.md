@@ -306,7 +306,7 @@ timers, retries, etc.
 
 We will use the SystemVerilog **interface** construct in this project, although
 minimally (See SVBook 6.5.1).  We have instantiated the interface for you in the
-**top.sv** file.  Your host module already has it as a port (boy, are we nice
+**USBHost.sv** file.  Your host module already has it as a port (boy, are we nice
 guys…).  The signal lines themselves are of type **tri0**, so they are pulled
 down to **0** when nothing is driving them.  Make sure you use tristate drivers.
 
@@ -563,7 +563,7 @@ keep adding. This will also help with partial credit.
 Same as in previous projects, you will demo outside of class times on or near
 the due date.
 
-* **Grace Day:**  You may use your grace day to turn in the solution up
-  to 24 hours late.  If you do not intend to use a grace day (or have already
-  used yours), make sure you have something committed and pushed at the
-  deadline to avoid getting a zero on this project.
+**Grace Day:**  You may use your grace day to turn in the solution up
+to 24 hours late.  If you do not intend to use a grace day (or have already
+used yours), make sure you have something committed and pushed at the
+deadline to avoid getting a zero on this project.
