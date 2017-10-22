@@ -1,0 +1,22 @@
+# Swapfiles and backups
+*.swp
+*.bak
+
+# Quartus Project files
+*.qws
+*.qpf
+
+# Log files
+*.qarlog
+*.log
+
+# VCS Simulator files
+csrc/*
+DVEfiles/*
+simv.daidir/*
+ucli.key
+
+# Executables
+simv
+*.out
+*.exe
