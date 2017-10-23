@@ -2,7 +2,7 @@
 TARGET = simv
 
 # Source files
-SRC = USBHost.sv USBDevice.sv USBTB.sv
+SRC = USBHost.sv USBDevice.svp USBTB.sv
 SRC += $(wildcard *.sv)
 SRC := $(sort $(SRC)) # Removes duplicates
 
