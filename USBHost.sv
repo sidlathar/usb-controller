@@ -15,7 +15,9 @@ task prelabRequest();
   logic [3:0] endp;
   assign addr = 7'd5;
   assign endp = 7'd4;
-  
+
+  logic sam;
+
 endtask : prelabRequest
 
 task readData
