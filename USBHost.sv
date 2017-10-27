@@ -11,7 +11,11 @@ module USBHost (
 );
 
 task prelabRequest();
-
+  logic [6:0] addr; 
+  logic [3:0] endp;
+  assign addr = 7'd5;
+  assign endp = 7'd4;
+  
 endtask : prelabRequest
 
 task readData
