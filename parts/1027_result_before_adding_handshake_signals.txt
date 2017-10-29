@@ -1,0 +1,33 @@
+Chronologic VCS simulator copyright 1991-2014
+Contains Synopsys proprietary information.
+Compiler version J-2014.12-SP3-1_Full64; Runtime version J-2014.12-SP3-1_Full64;  Oct 29 00:24 2017
+         0 pkt_bit_count:          0, pkt_in: 0100000010111100001, pkt_ready: 1, out_bit: x | cs: IDLE, ns: WAIT_LOAD | remainder: 11111
+         5 pkt_bit_count:          0, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 1 | cs: WAIT_LOAD, ns: IGNORE_PID | remainder: 11111
+        15 pkt_bit_count:          1, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 0 | cs: IGNORE_PID, ns: IGNORE_PID | remainder: 11111
+        25 pkt_bit_count:          2, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 0 | cs: IGNORE_PID, ns: IGNORE_PID | remainder: 11111
+        35 pkt_bit_count:          3, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 0 | cs: IGNORE_PID, ns: IGNORE_PID | remainder: 11111
+        45 pkt_bit_count:          4, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 0 | cs: IGNORE_PID, ns: IGNORE_PID | remainder: 11111
+        55 pkt_bit_count:          5, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 1 | cs: IGNORE_PID, ns: IGNORE_PID | remainder: 11111
+        65 pkt_bit_count:          6, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 1 | cs: IGNORE_PID, ns: IGNORE_PID | remainder: 11111
+        75 pkt_bit_count:          7, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 1 | cs: IGNORE_PID, ns: IGNORE_PID | remainder: 11111
+        85 pkt_bit_count:          8, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 1 | cs: IGNORE_PID, ns: CALC_CRC | remainder: 11111
+        95 pkt_bit_count:          9, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 0 | cs: CALC_CRC, ns: CALC_CRC | remainder: 11110
+       105 pkt_bit_count:         10, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 1 | cs: CALC_CRC, ns: CALC_CRC | remainder: 11001
+       115 pkt_bit_count:         11, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 0 | cs: CALC_CRC, ns: CALC_CRC | remainder: 10010
+       125 pkt_bit_count:         12, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 0 | cs: CALC_CRC, ns: CALC_CRC | remainder: 00001
+       135 pkt_bit_count:         13, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 0 | cs: CALC_CRC, ns: CALC_CRC | remainder: 00010
+       145 pkt_bit_count:         14, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 0 | cs: CALC_CRC, ns: CALC_CRC | remainder: 00100
+       155 pkt_bit_count:         15, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 0 | cs: CALC_CRC, ns: CALC_CRC | remainder: 01000
+       165 pkt_bit_count:         16, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 0 | cs: CALC_CRC, ns: CALC_CRC | remainder: 10000
+       175 pkt_bit_count:         17, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 1 | cs: CALC_CRC, ns: CALC_CRC | remainder: 00101
+       185 pkt_bit_count:         18, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 0 | cs: CALC_CRC, ns: CALC_CRC | remainder: 01111
+       195 pkt_bit_count:         19, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 0 | cs: CALC_CRC, ns: FLUSH_CRC | remainder: 11110
+       205 pkt_bit_count:         19, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 1 | cs: FLUSH_CRC, ns: FLUSH_CRC | remainder: 11111
+       255 pkt_bit_count:         19, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 0 | cs: FLUSH_CRC, ns: IDLE | remainder: 11111
+       265 pkt_bit_count:         19, pkt_in: 0100000010111100001, pkt_ready: 0, out_bit: 0 | cs: IDLE, ns: IDLE | remainder: 11111
+$finish called from file "CRC_Calc.sv", line 262.
+$finish at simulation time                  306
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 306
+CPU Time:      0.150 seconds;       Data structure size:   0.0Mb
+Sun Oct 29 00:24:12 2017
