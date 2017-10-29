@@ -46,24 +46,24 @@ module CRC_Calc_FSM
                        bs_ready,
    input  logic [31:0] pkt_len, pkt_bit_count, crc_bit_count, crc_flush_cnt,
    output logic        send_it, prl_load, out_sel, crc_do, crc_clr,
-                       crc_out_valid);
+                       crc_valid_out);
 
   enum logic [4:0] {IDLE, WAIT_LOAD, IGNORE_PID, CALC_CRC, FLUSH_CRC,
                     PAUSE_CALC_CRC, PAUSE_EDGE,
                     PAUSE_FLUSH_CRC } currState, nextState;
 
   always_comb begin
-    {send_it, prl_load, out_sel, crc_do, crc_clr, crc_out_valid} = 6'b00_0001;
+    {send_it, prl_load, out_sel, crc_do, crc_clr, crc_valid_out} = 6'b00_0001;
 
     unique case (currState)
 
       IDLE : begin
         if (pkt_ready) begin
-          crc_out_valid = 0;
+          crc_valid_out = 0;
 
           nextState = WAIT_LOAD;
         end else begin
-          crc_out_valid = 0;
+          crc_valid_out = 0;
 
           nextState = IDLE;
         end
@@ -132,7 +132,7 @@ module CRC_Calc_FSM
 
           nextState = PAUSE_FLUSH_CRC;
         end else begin
-          crc_out_valid = 0;
+          crc_valid_out = 0;
 
           nextState = IDLE;
         end
@@ -164,7 +164,7 @@ module CRC_Calc
    input  logic [99:0] pkt_in, // orig packet from protocol handler
    input  logic [31:0] pkt_len,
    output logic out_bit,       // bit going to BS
-                crc_out_valid);  // telling BS we are sending bits
+                crc_valid_out);  // telling BS we are sending bits
 
   /*********************************** FSM ***********************************/
 
@@ -287,7 +287,7 @@ endmodule : shiftRegister
 
 module CRC_Calc_test;
   logic clock, reset_n, pkt_ready, bs_ready, // inputs
-        out_bit, crc_out_valid; //output
+        out_bit, crc_valid_out; //output
  
  logic [99:0] pkt_in; // input
  logic [31:0] pkt_len; // input
@@ -297,14 +297,14 @@ module CRC_Calc_test;
 
   // TESTING RECEIVING PACKET
   logic [23:0] pkt_received;
-  shiftRegister #(24) sr (.D(out_bit), .Q(pkt_received), .load(crc_out_valid), .*);
+  shiftRegister #(24) sr (.D(out_bit), .Q(pkt_received), .load(crc_valid_out), .*);
   // (input  logic             D,
   //  input  logic             load, clear, clock, reset_n,
   //  output logic [WIDTH-1:0] Q);
 
   initial begin
-    $monitor ($stime,, "pkt_bit_cnt: %d, pkt_in: %b, pkt_ready: %b, crc_out_valid: %b, out_bit: %b | cs: %s, ns: %s | rem: %b ||| pkt_out: %b",
-                        dut.pkt_bit_count, pkt_in[18:0], pkt_ready, crc_out_valid, out_bit, dut.fsm.currState.name, dut.fsm.nextState.name, dut.prl.D, pkt_received);
+    $monitor ($stime,, "pkt_bit_cnt: %d, pkt_in: %b, pkt_ready: %b, crc_valid_out: %b, out_bit: %b | cs: %s, ns: %s | rem: %b ||| pkt_out: %b",
+                        dut.pkt_bit_count, pkt_in[18:0], pkt_ready, crc_valid_out, out_bit, dut.fsm.currState.name, dut.fsm.nextState.name, dut.prl.D, pkt_received);
     clock = 0;
     reset_n = 0;
     reset_n <= #1 1;
