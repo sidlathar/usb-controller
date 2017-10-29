@@ -43,14 +43,17 @@ endmodule : PISO_Register_Left
 module CRC_Calc_FSM
   (input  logic        clock, reset_n,
                        pkt_ready, // coming from protocol handler
+                       bs_ready,
    input  logic [31:0] pkt_len, pkt_bit_count, crc_bit_count, crc_flush_cnt,
-   output logic        send_it, prl_load, out_sel, crc_do);
+   output logic        send_it, prl_load, out_sel, crc_do, crc_clr,
+                       crc_sending);
 
-  enum logic [2:0] {IDLE, WAIT_LOAD, IGNORE_PID, START,
-                    FLUSH_CRC} currState, nextState;
+  enum logic [4:0] {IDLE, WAIT_LOAD, IGNORE_PID, CALC_CRC, FLUSH_CRC,
+                    PAUSE_CALC_CRC, PAUSE_EDGE,
+                    PAUSE_FLUSH_CRC } currState, nextState;
 
   always_comb begin
-    {send_it, prl_load, out_sel, crc_do} = 4'b0000;
+    {send_it, prl_load, out_sel, crc_do, crc_sending, crc_clr} = 6'b00_0000;
 
     unique case (currState)
 
@@ -65,43 +68,82 @@ module CRC_Calc_FSM
 
       WAIT_LOAD : begin
         send_it = 1;
+        crc_clr = 1;
+        crc_sending = 1;
+
         nextState = IGNORE_PID;
       end
 
       IGNORE_PID : begin
         if (pkt_bit_count != 32'd8) begin
           send_it = 1;
+          crc_sending = 1;
+
           nextState = IGNORE_PID;
         end else begin
           send_it = 1;
           crc_do = 1;
+          crc_sending = 1;
 
-          nextState = START;
+          nextState = CALC_CRC;
         end
       end
 
 
-      START : begin
-        if (crc_bit_count != pkt_len) begin
+      CALC_CRC : begin
+        if (crc_bit_count != pkt_len && bs_ready) begin
           send_it = 1;
           crc_do = 1;
+          crc_sending = 1;
 
-          nextState = START;
-        end else begin
+          nextState = CALC_CRC;
+        end else if (~bs_ready && crc_bit_count != pkt_len) begin
+          // Don't send any outputs, pause everything!
+          nextState = PAUSE_CALC_CRC;
+        end else if (~bs_ready && crc_bit_count == pkt_len) begin
+          prl_load = 1;
+
+          nextState = PAUSE_EDGE;
+        end else if (bs_ready && crc_bit_count == pkt_len) begin
           prl_load = 1;
 
           nextState = FLUSH_CRC;
         end
       end
 
+      PAUSE_CALC_CRC : begin
+        send_it = 1;
+        crc_do = 1;
+        crc_sending = 1;
+
+        nextState = CALC_CRC;
+      end
+
+      PAUSE_EDGE : begin
+        crc_sending = 1;
+
+        nextState = FLUSH_CRC;
+      end
+
       FLUSH_CRC : begin
-        if (crc_flush_cnt != 32'd5) begin
+        if (crc_flush_cnt != 32'd4 && bs_ready) begin
           out_sel = 1;
+          crc_sending = 1;
 
           nextState = FLUSH_CRC;
+        end else if (crc_flush_cnt != 32'd4 && ~bs_ready) begin
+
+          nextState = PAUSE_FLUSH_CRC;
         end else begin
           nextState = IDLE;
         end
+      end
+
+      PAUSE_FLUSH_CRC : begin
+        out_sel = 1;
+        crc_sending = 1;
+
+        nextState = FLUSH_CRC;
       end
 
     endcase // currState
@@ -119,17 +161,19 @@ endmodule : CRC_Calc_FSM
 
 module CRC_Calc
   (input  logic clock, reset_n,
-                pkt_ready,
+                pkt_ready,     // PH ready to send us a packet
+                bs_ready,      // BS ready to receive bits
    input  logic [99:0] pkt_in, // orig packet from protocol handler
    input  logic [31:0] pkt_len,
-   output logic out_bit);
+   output logic out_bit,       // bit going to BS
+                crc_sending);  // telling BS we are sending bits
 
   /*********************************** FSM ***********************************/
 
   logic prl_load, // Load remainder
         out_sel, // 1 is crc_bit, 0 is pkt_bit
         send_it, // Sends pkt bits out serially by shifting PRR
-        crc_do; // Tell CRC to do calculation
+        crc_do, crc_clr; // Tell CRC to do calculation
   logic [31:0] pkt_bit_count, crc_bit_count;
   CRC_Calc_FSM fsm (.*);
   // (input  logic        clock, reset_n,
@@ -195,7 +239,7 @@ module CRC_Calc
         x2_Q <= x2_D;
         x3_Q <= x3_D;
         x4_Q <= x4_D;
-      end else begin
+      end else if (crc_clr) begin
         crc_bit_count <= 32'd8; // init to 8 to account for PID
 
         x0_Q <= 1;
@@ -225,9 +269,24 @@ module CRC_Calc
 
 endmodule : CRC_Calc
 
+//SIPO left shift register
+module shiftRegister
+  #(parameter WIDTH=8)
+  (input  logic             D,
+   input  logic             load, clock, reset_n,
+   output logic [WIDTH-1:0] Q);
+   
+  always_ff @(posedge clock, negedge reset_n) begin
+    if (~reset_n)
+      Q <= 0;
+    else if (load)
+      Q <= {D, Q[WIDTH-1:1]};
+  end
+      
+endmodule : shiftRegister 
 module CRC_Calc_test;
-  logic clock, reset_n, pkt_ready, // inputs
-        out_bit; //output
+  logic clock, reset_n, pkt_ready, bs_ready, // inputs
+        out_bit, crc_sending; //output
  
  logic [99:0] pkt_in; // input
  logic [31:0] pkt_len; // input
@@ -235,9 +294,16 @@ module CRC_Calc_test;
 
   CRC_Calc dut (.*);
 
+  // TESTING RECEIVING PACKET
+  logic [23:0] pkt_received;
+  shiftRegister #(24) sr (.D(out_bit), .Q(pkt_received), .load(crc_sending), .*);
+  // (input  logic             D,
+  //  input  logic             load, clear, clock, reset_n,
+  //  output logic [WIDTH-1:0] Q);
+
   initial begin
-    $monitor ($stime,, "pkt_bit_count: %d, pkt_in: %b, pkt_ready: %b, out_bit: %b | cs: %s, ns: %s | remainder: %b",
-                        dut.pkt_bit_count, pkt_in[18:0], pkt_ready, out_bit, dut.fsm.currState.name, dut.fsm.nextState.name, dut.prl.D);
+    $monitor ($stime,, "pkt_bit_cnt: %d, pkt_in: %b, pkt_ready: %b, crc_sending: %b, out_bit: %b | cs: %s, ns: %s | rem: %b ||| pkt_out: %b",
+                        dut.pkt_bit_count, pkt_in[18:0], pkt_ready, crc_sending, out_bit, dut.fsm.currState.name, dut.fsm.nextState.name, dut.prl.D, pkt_received);
     clock = 0;
     reset_n = 0;
     reset_n <= #1 1;
@@ -247,12 +313,41 @@ module CRC_Calc_test;
   initial begin
     pkt_in <= 19'b0100_0000101_11100001;
     pkt_ready <= 1;
+    bs_ready <= 1;
     pkt_len <= 32'd19;
     @(posedge clock);
     pkt_ready <= 0;
-    for (int i = 0; i < 30; i++) begin
-      @(posedge clock);
-    end
+    @(posedge clock);
+
+    // Wait for pid
+    repeat(9)
+    @ (posedge clock);
+
+    // Wait!!!
+    bs_ready <= 0;
+    @ (posedge clock);
+    bs_ready <= 1;
+
+    repeat(9)
+    @ (posedge clock);
+
+    // Wait!!!
+    bs_ready <= 0;
+    @ (posedge clock);
+    bs_ready <= 1;
+    @ (posedge clock);
+
+    repeat(3)
+    @(posedge clock);
+
+    // Wait!!!
+    // bs_ready <= 0;
+    // @ (posedge clock);
+    // bs_ready <= 1;
+    // @ (posedge clock);
+
+    repeat(100)
+    @(posedge clock);
 
 
     #1 $finish;
