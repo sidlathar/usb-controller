@@ -22,7 +22,7 @@ endmodule : PISO_Register_Right
 
 // A Parallel In, Serial Out register for a known length
 module PISO_Register_Left
-  #(parameter W=24)
+  #(parameter W=5)
   (input  logic clock, load, shift,
    input  logic [W-1:0] D,
    output logic Q);
@@ -46,14 +46,14 @@ module CRC_Calc_FSM
                        bs_ready,
    input  logic [31:0] pkt_len, pkt_bit_count, crc_bit_count, crc_flush_cnt,
    output logic        send_it, prl_load, out_sel, crc_do, crc_clr,
-                       crc_valid_out);
+                       crc_valid_out, crc_reg_shift);
 
   enum logic [4:0] {IDLE, WAIT_LOAD, IGNORE_PID, CALC_CRC, FLUSH_CRC,
                     PAUSE_CALC_CRC, PAUSE_EDGE,
                     PAUSE_FLUSH_CRC } currState, nextState;
 
   always_comb begin
-    {send_it, prl_load, out_sel, crc_do, crc_clr, crc_valid_out} = 6'b00_0001;
+    {send_it, prl_load, out_sel, crc_do, crc_clr, crc_valid_out, crc_reg_shift} = 7'b00_00010;
 
     unique case (currState)
 
@@ -92,19 +92,19 @@ module CRC_Calc_FSM
 
 
       CALC_CRC : begin
-        if (crc_bit_count != pkt_len && bs_ready) begin
+        if (crc_bit_count != (pkt_len - 1) && bs_ready) begin
           send_it = 1;
           crc_do = 1;
 
           nextState = CALC_CRC;
-        end else if (~bs_ready && crc_bit_count != pkt_len) begin
+        end else if (~bs_ready && crc_bit_count != (pkt_len - 1)) begin
           // Don't send any outputs, pause everything!
           nextState = PAUSE_CALC_CRC;
-        end else if (~bs_ready && crc_bit_count == pkt_len) begin
+        end else if (~bs_ready && crc_bit_count == (pkt_len - 1)) begin
           prl_load = 1;
 
           nextState = PAUSE_EDGE;
-        end else if (bs_ready && crc_bit_count == pkt_len) begin
+        end else if (bs_ready && crc_bit_count == (pkt_len - 1)) begin
           prl_load = 1;
 
           nextState = FLUSH_CRC;
@@ -125,6 +125,7 @@ module CRC_Calc_FSM
 
       FLUSH_CRC : begin
         if (crc_flush_cnt != 32'd4 && bs_ready) begin
+          crc_reg_shift = 1;
           out_sel = 1;
 
           nextState = FLUSH_CRC;
@@ -132,6 +133,9 @@ module CRC_Calc_FSM
 
           nextState = PAUSE_FLUSH_CRC;
         end else begin
+          crc_reg_shift = 1;
+          out_sel = 1;
+
           crc_valid_out = 0;
 
           nextState = IDLE;
@@ -139,6 +143,7 @@ module CRC_Calc_FSM
       end
 
       PAUSE_FLUSH_CRC : begin
+        crc_reg_shift = 1;
         out_sel = 1;
 
         nextState = FLUSH_CRC;
@@ -171,7 +176,8 @@ module CRC_Calc
   logic prl_load, // Load remainder
         out_sel, // 1 is crc_bit, 0 is pkt_bit
         send_it, // Sends pkt bits out serially by shifting PRR
-        crc_do, crc_clr; // Tell CRC to do calculation
+        crc_do, crc_clr, // Tell CRC to do calculation
+        crc_reg_shift;
   logic [31:0] pkt_bit_count, crc_bit_count;
   CRC_Calc_FSM fsm (.*);
   // (input  logic        clock, reset_n,
@@ -201,9 +207,9 @@ module CRC_Calc
   // To hold our remainder from CRC calculation
   logic crc_bit;
   logic x0_D, x1_D, x2_D, x3_D, x4_D,
-        x0_Q, x1_Q, x2_Q, x3_Q, x4_Q;
-  PISO_Register_Left #(5) prl (.D({x4_Q, x3_Q, x2_Q, x1_Q, x0_Q}),
-                               .Q(crc_bit), .load(prl_load), .shift(send_it),
+        x0_Q, x1_Q, x2_Q, x3_Q, x4_Q; // Don't forget to complement
+  PISO_Register_Left #(5) prl (.D({~x4_Q, ~x3_Q, ~x2_Q, ~x1_Q, ~x0_Q}),
+                               .Q(crc_bit), .load(prl_load), .shift(crc_reg_shift),
                                .*);
   // #(parameter W=24)
   // (input  logic clock, load, shift,
@@ -327,7 +333,7 @@ module BitStuffer_FSM
 
           nextState = COUNT_ONES;
         end else if (~crc_valid_out) begin
-          bs_sending = 1; // DELETE????????????????????????????????????????????????????
+          bs_sending = 1;
 
           nextState = IDLE;
         end else if (in_bit == 1 && ones_cnt == 32'd5) begin
@@ -357,6 +363,8 @@ module BitStuffer_FSM
 
           nextState = COUNT_ONES;
         end else begin
+          bs_sending = 1; // DELETE ?????????????????????????????????????????????????????????????????????????????
+
           nextState = IDLE;
         end
       end
@@ -463,20 +471,23 @@ module top;
   //                 crc_valid_out);  // telling BS we are sending bits
 
   // TESTING RECEIVING PACKET
-  logic [24:0] pkt_received;
-  shiftRegister #(25) sr (.D(bs_out_bit), .Q(pkt_received), .load(bs_sending), .*);
+  logic [23:0] pkt_received;
+  shiftRegister #(24) sr (.D(bs_out_bit), .Q(pkt_received), .load(bs_sending), .*);
   // (input  logic             D,
   //  input  logic             load, clear, clock, reset_n,
   //  output logic [WIDTH-1:0] Q);
 
-  logic [24:0] test_pkt;
+  logic [23:0] test_pkt;
   // assign test_pkt = 19'b0100_0000101_11100001;
-  assign test_pkt = 19'b0100_1111111_11100001;
+  // assign test_pkt = 19'b0100_1111111_11100001;
   // assign test_pkt = 19'b0100_0111111_00000001;
+  assign test_pkt = 19'b0100_0000101_11100001; // PRELAB: OUT, addr=5, ENDP=4, crc5=10 -> 0x0F
+  // assign test_pkt = 19'b1000_0000101_11100001; // OUT, addr=5 endp=8 crc5=0e
+  // assign test_pkt = 19'b1001_0000101_01101001; // IN, addr=5 endp=8 crc5=0e
 
   initial begin
-    $monitor ($stime,, "crc_out_bit: %b, bs_out_bit: %b, bs_sending: %b | pkt_in: %b, ANS: %b",
-              crc_out_bit, bs_out_bit, bs_sending, test_pkt, pkt_received);
+    $monitor ($stime,, "crc_out_bit: %b, bs_sending: %b | pkt_in: %b, ANS: %b | crc.prl.D: %h | cs: %s, ns: %s",
+              crc_out_bit,bs_sending, test_pkt, pkt_received, crc.prl.D, bs.fsm.currState.name, bs.fsm.nextState.name);
     clock = 0;
     reset_n = 0;
     reset_n <= #1 1;
@@ -487,6 +498,8 @@ module top;
     pkt_in <= test_pkt;
     pkt_ready <= 1;
     pkt_len <= 32'd19;
+
+    // bs_ready <= 1;
     @(posedge clock);
     pkt_ready <= 0;
     @(posedge clock);
