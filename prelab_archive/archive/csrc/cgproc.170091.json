@@ -1,0 +1,56 @@
+{
+    "Modules": {
+        "...MASTER...": {},
+        "std": {
+            "Compiled": "Yes",
+            "Compiled Times": 1
+        },
+        "NRZI_Encoder_Test": {
+            "Compiled": "Yes",
+            "Compiled Times": 1
+        }
+    },
+    "CompUnits": {
+        "amcQw_d": {
+            "mod": "...MASTER...",
+            "out": "amcQw_d.o",
+            "mode": 4,
+            "bytes": 7344,
+            "archive": "archive.0/_170091_archive_1.a"
+        },
+        "UIuND_d": {
+            "mod": "NRZI_Encoder_Test",
+            "out": "UIuND_d.o",
+            "mode": 4,
+            "bytes": 24328,
+            "archive": "archive.0/_170091_archive_1.a"
+        },
+        "reYIK_d": {
+            "mod": "std",
+            "out": "reYIK_d.o",
+            "mode": 4,
+            "bytes": 29830,
+            "archive": "archive.0/_170091_archive_1.a"
+        }
+    },
+    "ObjArchives": [
+        {
+            "archive": "archive.0/_170091_archive_1.a",
+            "objects": [
+                [
+                    "amcQw_d.o",
+                    7344
+                ],
+                [
+                    "reYIK_d.o",
+                    29830
+                ],
+                [
+                    "UIuND_d.o",
+                    24328
+                ]
+            ],
+            "size": 61502
+        }
+    ]
+}

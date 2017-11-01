@@ -4,7 +4,7 @@ module PISO_Register
   #(parameter W=24)
   (input  logic clock, load, shift,
    input  logic [W-1:0] D,
-   output logic Q);
+   output logic [3:0] Q);
 
   logic [W-1:0] buff;
 

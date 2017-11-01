@@ -1,0 +1,50 @@
+{
+    "NameTable": {
+        "std": [
+            "std",
+            "reYIK",
+            "module"
+        ],
+        "NRZI_Encoder_Test": [
+            "NRZI_Encoder_Test",
+            "UIuND",
+            "module"
+        ],
+        "...MASTER...": [
+            "SIM",
+            "amcQw",
+            "module"
+        ]
+    },
+    "LVLData": [
+        "SIM"
+    ],
+    "CompileStrategy": "fullobj",
+    "CurCompileUdps": {},
+    "SIMBData": {
+        "out": "amcQwB.o",
+        "bytes": 88581
+    },
+    "CurCompileModules": [
+        "...MASTER...",
+        "std",
+        "NRZI_Encoder_Test"
+    ],
+    "PEModules": [],
+    "stat": {
+        "nMops": 1180
+    },
+    "CompileProcesses": [
+        "cgproc.170091.json"
+    ],
+    "CompileStatus": "Successful",
+    "Misc": {
+        "cwd": "/afs/ece.cmu.edu/usr/ssk1/Private/18341/projects/usb-sampromises/parts/archive",
+        "csrc": "csrc",
+        "default_output_dir": "csrc",
+        "daidir_abs": "/afs/ece.cmu.edu/usr/ssk1/Private/18341/projects/usb-sampromises/parts/archive/simv.daidir",
+        "csrc_abs": "/afs/ece.cmu.edu/usr/ssk1/Private/18341/projects/usb-sampromises/parts/archive/csrc",
+        "archive_dir": "archive.0",
+        "daidir": "simv.daidir"
+    }
+}

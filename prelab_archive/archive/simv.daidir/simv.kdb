@@ -1,0 +1,9 @@
+rc file Version 1.0
+
+[Design]
+COMPILE_PATH=/afs/ece.cmu.edu/usr/ssk1/Private/18341/projects/usb-sampromises/parts/archive
+SystemC=FALSE
+UUM=FALSE
+KDB=FALSE
+USE_NOVAS_HOME=FALSE
+TOP=NRZI_Encoder_Test 
