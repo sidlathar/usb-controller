@@ -12,9 +12,7 @@ module USBHost (
 
   /* OUR MODULES BEGIN HERE */
 
-   // "TASK" inputs to CRC (should be coming from our Protocol Handler)
-   logic [99:0] pkt_in; // input
-   logic [31:0] pkt_len; // input
+
 
    // CRC MODULE INSTANTIATION
    logic pkt_ready, bs_ready, // inputs
@@ -31,16 +29,18 @@ module USBHost (
 
    // DPDM MODULE INSTANTIATION
    logic out_DP, out_DM, out_done;
-   DPDM dpdm (.in_bit(nrzi_out_bit),
-              .DP(out_DP), .DM(out_DM), .*);
-   // (input  logic clock, reset_n,
-   //               in_bit, nrzi_sending,
-   //  output logic DP, DM, out_done);
+   DPDM dpdm (.in_bit(nrzi_out_bit), .DP(out_DP), .DM(out_DM), .*);
 
-   logic [18:0] test_pkt;
-   assign test_pkt = 19'b0100_0000101_11100001; // PRELAB: OUT, addr=5, ENDP=4, crc5=10
 
   /* OUR MODULES END HERE */
+
+  // "TASK" inputs to CRC (should be coming from our Protocol Handler)
+  logic [99:0] pkt_in; // input
+  logic [31:0] pkt_len; // input
+  
+   /// PRELAB: OUT, addr=5, ENDP=4, crc5=10
+   logic [18:0] test_pkt;
+   assign test_pkt = 19'b0100_0000101_11100001;
 
   // Assign DP, DM to the wire
   assign wires.DP = out_DP;
@@ -56,6 +56,7 @@ module USBHost (
 
     repeat(100)
     @(posedge clock);
+
   endtask : prelabRequest
 
   task readData

@@ -10,7 +10,7 @@ module NRZI_Encoder_FSM
   always_comb begin
     {out_sel, nrzi_sending} = 2'b00;
 
-    unique case (currState)
+    case (currState)
 
       IDLE : begin
         if (~bs_sending)
@@ -83,15 +83,7 @@ module NRZI_Encoder
       out_bit = prev_bit;
   end
 
-  // always_ff @(posedge clock or negedge reset_n) begin
-  //   if(~reset_n) begin
-  //     NRZI_bit <= 0;
-  //   end else begin
-  //     NRZI_bit <= (in_bit == 0) ? ~out_bit : out_bit;
-  //   end
-  // end
-
-  // The FSM
+  // THE FSM
   NRZI_Encoder_FSM fsm (.*);
   // (input logic clock, reset_n,
   //              in_bit, bs_sending

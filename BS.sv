@@ -15,7 +15,7 @@ module BitStuffer_FSM
      bs_sending} = 7'b10_0000_0;
     // NOTE : bs_ready DEFAULTED TO 1
 
-    unique case (currState)
+    case (currState)
 
       IDLE : begin
         if (~crc_valid_out) begin
@@ -89,7 +89,7 @@ module BitStuffer_FSM
 
           nextState = COUNT_ONES;
         end else begin
-          bs_sending = 1; // DELETE ?????????????????????????????????????????????????????????????????????????????
+          bs_sending = 1;
 
           nextState = IDLE;
         end
@@ -117,11 +117,11 @@ module BitStuffer
   logic oc_inc, oc_clr, bc_inc, bc_clr, sel_stuffbit;
 
   BitStuffer_FSM fsm (.*);
-  // (input  logic        clock, reset_n,
-  //                      crc_valid_out, in_bit,
-  //  input  logic [31:0] ones_cnt, bit_cnt,
-  //  output logic        bs_ready, oc_inc, oc_clr, bc_inc, bc_clr, sel_stuffbit,
-  //                      bs_sending);
+  // (input  logic       clock, reset_n,
+  //                     crc_valid_out, in_bit,
+  // input  logic [31:0] ones_cnt, bit_cnt,
+  //  utput logic        bs_ready, oc_inc, oc_clr, bc_inc, bc_clr, sel_stuffbit,
+  //                     bs_sending);
 
   // COUNT THE ONES WE SEE
   always_ff @(posedge clock, negedge reset_n) begin
