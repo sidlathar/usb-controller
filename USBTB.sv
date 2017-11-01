@@ -130,7 +130,7 @@ module USBTB;
                    $time);
         end
       join_any
-      ##1 ;
+      ##2 ;
 
       assert(device_inst.device_idle) else begin
         $error("Device is still attempting to finish the transaction");

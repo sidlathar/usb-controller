@@ -109,7 +109,7 @@ module DPDM_FSM
       end
 
       FLUSH : begin
-        if (flush_count != 32'd7) begin
+        if (flush_count != 32'd6) begin
           out_sel = 2'd1;
           re = 1; // ONLY READ TO FLUSH OUT
           cnt_inc = 1;
@@ -231,7 +231,7 @@ endmodule : DPDM
 
 /* TESTBENCH BEGIN */
 
-//SIPO right shift register
+// SIPO right shift register
 // module shiftRegister
 //   #(parameter WIDTH=8)
 //   (input  logic             D,
@@ -247,59 +247,59 @@ endmodule : DPDM
       
 // endmodule : shiftRegister
 
-module DPDM_Test;
-  logic clock, reset_n; // Typical inputs 
+// module DPDM_Test;
+//   logic clock, reset_n; // Typical inputs 
   
-  logic in_bit, nrzi_sending, // inputs
-        DP, DM, out_done; // outputs
+//   logic in_bit, nrzi_sending, // inputs
+//         DP, DM, out_done; // outputs
 
-  DPDM dut (.*);
-    // (input  logic clock, reset_n,
-    //               in_bit, nrzi_sending,
-    //  output logic DP, DM);
+//   DPDM dut (.*);
+//     // (input  logic clock, reset_n,
+//     //               in_bit, nrzi_sending,
+//     //  output logic DP, DM);
 
-  // TESTING RECEIVING PACKET
-  logic [39:0] DP_received;
-  logic always_load;
-  assign always_load = 1;
-  shiftRegister #(40) srDP (.D(DP), .Q(DP_received), .load(always_load), .*);
+//   // TESTING RECEIVING PACKET
+//   logic [34:0] DP_received;
+//   logic always_load;
+//   assign always_load = 1'b1;
+//   shiftRegister #(35) srDP (.D(DP), .Q(DP_received), .load(always_load), .*);
 
-  logic [39:0] DM_received;
-  shiftRegister #(40) srDM (.D(DM), .Q(DM_received), .load(always_load), .*);
-  // (input  logic             D,
-  //  input  logic             load, clear, clock, reset_n,
-  //  output logic [WIDTH-1:0] Q);
+//   logic [34:0] DM_received;
+//   shiftRegister #(35) srDM (.D(DM), .Q(DM_received), .load(always_load), .*);
+//   // (input  logic             D,
+//   //  input  logic             load, clear, clock, reset_n,
+//   //  output logic [WIDTH-1:0] Q);
 
-  logic [23:0] test_pkt;
-  // 101011001010100111110101 (OUTPUT FROM NRZI)
-  assign test_pkt = 24'b101011001010100111110101;
-  /* FINAL (CORRECT) RESULT: DPDM: zz, out_done: 0 |
-  * DP_rec: 1001010110010101001111101010010101000000
-  * DM_rec: 0000101001101010110000010101101010100000 */
+//   logic [23:0] test_pkt;
+//   // 101011001010100111110101 (OUTPUT FROM NRZI)
+//   assign test_pkt = 24'b101011001010100111110101;
+//   /* FINAL (CORRECT) RESULT: DPDM: zz, out_done: 0 |
+//   * DP_rec: 1001010110010101001111101010010101000000
+//   * DM_rec: 0000101001101010110000010101101010100000 */
 
-  initial begin
-    $monitor ($stime,, "pkt_in: %b | n_sending: %b, in_bit: %b | DPDM: %b%b, out_done: %b | DP_rec: %b, DM_rec: %b",
-                        test_pkt, nrzi_sending, in_bit, DP, DM, out_done, DP_received, DM_received);
-    clock = 0;
-    reset_n = 0;
-    reset_n <= #1 1;
-    forever #5 clock = ~clock;
-  end
+//   initial begin
+//     $monitor ($stime,, "pkt_in: %b | n_sending: %b, in_bit: %b | DPDM: %b%b, out_done: %b | DP_rec: %b, DM_rec: %b | cs: %s ns: %s",
+//                         test_pkt, nrzi_sending, in_bit, DP, DM, out_done, DP_received, DM_received, dut.fsm.currState.name, dut.fsm.nextState.name);
+//     clock = 0;
+//     reset_n = 0;
+//     reset_n <= #1 1;
+//     forever #5 clock = ~clock;
+//   end
 
-  initial begin
-    for (int i = 0; i < 23; i ++) begin
-      in_bit <= test_pkt[i];
-      nrzi_sending <= 1;
-      @(posedge clock);
-    end
-    in_bit <= test_pkt[23];
-    nrzi_sending <= 0;
-    @(posedge clock);
+//   initial begin
+//     for (int i = 0; i < 23; i ++) begin
+//       in_bit <= test_pkt[i];
+//       nrzi_sending <= 1;
+//       @(posedge clock);
+//     end
+//     in_bit <= test_pkt[23];
+//     nrzi_sending <= 0;
+//     @(posedge clock);
 
-    repeat (15)
-    @(posedge clock);
+//     repeat (15)
+//     @(posedge clock);
 
-    #1 $finish;
-  end
+//     #1 $finish;
+//   end
 
-endmodule : DPDM_Test
+// endmodule : DPDM_Test

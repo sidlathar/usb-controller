@@ -214,7 +214,7 @@ module CRC_Calc
   logic crc_bit;
   logic x0_D, x1_D, x2_D, x3_D, x4_D,
         x0_Q, x1_Q, x2_Q, x3_Q, x4_Q; // Don't forget to complement
-  PISO_Register_Left #(5) prl (.D({~x4_Q, ~x3_Q, ~x2_Q, ~x1_Q, ~x0_Q}),
+  PISO_Register_Left #(5) prl (.D({~x0_Q, ~x1_Q, ~x2_Q, ~x3_Q, ~x4_Q}), // CHANGED ORDER... BUT WE THOUGHT LSB -> MSB
                                .Q(crc_bit), .load(prl_load), .shift(crc_reg_shift),
                                .*);
   // #(parameter W=24)
@@ -496,7 +496,7 @@ module NRZI_Encoder
 
   // "Flip-flop" to remember the previous bit
   logic prev_bit;
-  always_ff @(posedge clock or negedge reset_n) begin
+  always_ff @(posedge clock, negedge reset_n) begin
     if(~reset_n) begin
       prev_bit <= 0;
     end else begin
@@ -522,7 +522,7 @@ module NRZI_Encoder
     if (out_sel)
       out_bit = NRZI_bit;
     else
-      out_bit = in_bit;
+      out_bit = prev_bit;
   end
 
   // always_ff @(posedge clock or negedge reset_n) begin
@@ -546,20 +546,20 @@ endmodule : NRZI_Encoder
 /* TESTBENCH BEGIN */
 
 //SIPO left shift register
-module shiftRegister
-  #(parameter WIDTH=8)
-  (input  logic             D,
-   input  logic             load, clock, reset_n,
-   output logic [WIDTH-1:0] Q);
+// module shiftRegister
+//   #(parameter WIDTH=8)
+//   (input  logic             D,
+//    input  logic             load, clock, reset_n,
+//    output logic [WIDTH-1:0] Q);
    
-  always_ff @(posedge clock, negedge reset_n) begin
-    if (~reset_n)
-      Q <= 0;
-    else if (load)
-      Q <= {D, Q[WIDTH-1:1]};
-  end
+//   always_ff @(posedge clock, negedge reset_n) begin
+//     if (~reset_n)
+//       Q <= 0;
+//     else if (load)
+//       Q <= {D, Q[WIDTH-1:1]};
+//   end
       
-endmodule : shiftRegister
+// endmodule : shiftRegister
 
 // module CRC_BS_NRZI_top;
 //   logic clock, reset_n; // Typical inputs 

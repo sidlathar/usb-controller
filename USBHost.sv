@@ -9,114 +9,78 @@ module USBHost (
   USBWires wires,
   input logic clock, reset_n
 );
-// module CRC_Encoder_FSM
-//   ();
-// endmodule : CRC_Encoder_FSM
 
-// module CRC_Encoder
-//   ();
-// endmodule : CRC_Encoder
+  /* OUR MODULES BEGIN HERE */
 
-/* CRC ENCODING END */
+   // "TASK" inputs to CRC (should be coming from our Protocol Handler)
+   logic [99:0] pkt_in; // input
+   logic [31:0] pkt_len; // input
 
+   // CRC MODULE INSTANTIATION
+   logic pkt_ready, bs_ready, // inputs
+         crc_out_bit, crc_valid_out; //output
+   CRC_Calc crc (.out_bit(crc_out_bit), .*);
 
-  // task prelabRequest();
+   // BITSTUFFER MODULE INSTANTIATION
+   logic bs_out_bit, bs_sending;
+   BitStuffer bs (.in_bit(crc_out_bit), .out_bit(bs_out_bit), .*);
 
-  //   // Prelab packet to send
-  //   logic [3:0] pid;
-  //   logic [7:0] pid_encoded;
-  //   logic [6:0] addr; 
-  //   logic [3:0] endp;
-  //   assign pid = 4'b0001; // OUT
-  //   assign pid_encoded = {~pid, pid};
-  //   assign addr = 7'd5;
-  //   assign endp = 7'd4;
+   // NRZI MODULE INSTANTIATION
+   logic nrzi_out_bit, nrzi_sending;
+   NRZI_Encoder nrzi (.in_bit(bs_out_bit), .out_bit(nrzi_out_bit), .*);
 
-  //   // pkt_t prelab_pkt;
-  //   // prelab_pkt.pid = PID_OUT;
-  //   // prelab_pkt.addr = 7'd5;
-  //   // prelab_pkt.endp = 7'd4;
+   // DPDM MODULE INSTANTIATION
+   logic out_DP, out_DM, out_done;
+   DPDM dpdm (.in_bit(nrzi_out_bit),
+              .DP(out_DP), .DM(out_DM), .*);
+   // (input  logic clock, reset_n,
+   //               in_bit, nrzi_sending,
+   //  output logic DP, DM, out_done);
 
-  //   // Generic fixed size packet
-  //   // typedef struct {
-  //   //   pid_t pid;
-  //   //   logic [`ADDR_BITS-1:0] addr;
-  //   //   logic [`ENDP_BITS-1:0] endp;
-  //   //   logic [`PAYLOAD_BITS-1:0] payload;
-  //   // } pkt_t;
-  //   // const pid_t valid_pids[5] = '{PID_OUT, PID_IN, PID_DATA0, PID_ACK, PID_NAK};
+   logic [18:0] test_pkt;
+   assign test_pkt = 19'b0100_0000101_11100001; // PRELAB: OUT, addr=5, ENDP=4, crc5=10
 
+  /* OUR MODULES END HERE */
 
-  //   initial begin
-  //     pkt_in <= prelab_pkt;
-  //     @(posedge clock);
-  //   end
+  // Assign DP, DM to the wire
+  assign wires.DP = out_DP;
+  assign wires.DM = out_DM;
 
-  // endtask : prelabRequest
+  task prelabRequest();
+    pkt_in <= test_pkt;
+    pkt_ready <= 1;
+    pkt_len <= 32'd19;
+    @(posedge clock);
+    pkt_ready <= 0;
+    @(posedge clock);
+
+    repeat(100)
+    @(posedge clock);
+  endtask : prelabRequest
 
   task readData
-  // Host sends mempage to thumb drive using a READ (OUT->DATA0->OUT->DATA0)
-  // transaction, and then receives data from it. This task should return both the
-  // data and the transaction status, successful or unsuccessful, to the caller.
-  ( input logic [15:0] mempage, // Page to write
-    output logic [63:0] data, // Vector of bytes to write
-    output logic success);
+    // Host sends mempage to thumb drive using a READ (OUT->DATA0->OUT->DATA0)
+    // transaction, and then receives data from it. This task should return both the
+    // data and the transaction status, successful or unsuccessful, to the caller.
+    ( input logic [15:0] mempage, // Page to write
+      output logic [63:0] data, // Vector of bytes to write
+      output logic success);
 
-    data = 64'h0;
-    success = 1'b0;
+      data = 64'h0;
+      success = 1'b0;
 
   endtask : readData
 
   task writeData
-  // Host sends mempage to thumb drive using a WRITE (OUT->DATA0->IN->DATA0)
-  // transaction, and then sends data to it. This task should return the
-  // transaction status, successful or unsuccessful, to the caller.
-  ( input logic [15:0] mempage, // Page to write
-    input logic [63:0] data, // Vector of bytes to write
-    output logic success);
+    // Host sends mempage to thumb drive using a WRITE (OUT->DATA0->IN->DATA0)
+    // transaction, and then sends data to it. This task should return the
+    // transaction status, successful or unsuccessful, to the caller.
+    ( input logic [15:0] mempage, // Page to write
+      input logic [63:0] data, // Vector of bytes to write
+      output logic success);
 
-    success = 1'b0;
+      success = 1'b0;
 
   endtask : writeData
 
 endmodule : USBHost
-
-
-/* COMPONENT MODULES BEGIN */
-// A normal counter
-module Counter
-   (input  logic clock, clear, inc, reset_n,
-    output logic [31:0] Q);
-
-  always_ff @(posedge clock, negedge reset_n)
-    if (~reset_n)
-      Q <= 0;
-    else if (clear)
-      Q <= 0;
-    else if (inc)
-      // else: always count clocks
-      Q <= Q + 1;
-endmodule : Counter
-
-// A Parallel In, Serial Out register
-module PISO_Register
-  #(parameter W=24)
-  (input  logic clock, load, shift,
-   input  logic [W-1:0] D,
-   output logic Q);
-
-  logic [W-1:0] buff;
-
-  always_ff @(posedge clock) begin
-    if (load)
-      buff <= D;
-    else if (shift) begin
-      Q <= buff[W-1];
-      buff <= (buff << 1);
-    end
-  end
-
-endmodule : PISO_Register
-/* COMPONENT MODULES END */
-
-// /* CRC ENCODING BEGIN */
