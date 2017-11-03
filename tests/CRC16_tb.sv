@@ -45,15 +45,10 @@ module CRC16_tb;
   //  output logic [WIDTH-1:0] Q);  
 
   logic [71:0] test_pkt;
-  // assign test_pkt = 19'b0100_0000101_11100001;
-  // assign test_pkt = 19'b0100_1111111_11100001;
-  // assign test_pkt = 19'b0100_0111111_00000001;
-  // assign test_pkt = 19'b0100_0000101_11100001; // PRELAB: OUT, addr=5, ENDP=4, crc5=10
-  // assign test_pkt = 19'b1000_0000101_11100001; // OUT, addr=5 endp=8 crc5=0e
-  // assign test_pkt = 19'b1000_0000101_01101001; // IN, addr=5 endp=8 crc5=0e
-  // payload=0f21000000000000 crc16=a0e7 -> E705 (REVERSED)
-  assign test_pkt = 72'h0f21000000000000_C3;
+  // payload=0f21000000000000 crc16=a0e7
+  // assign test_pkt = 72'h0f21000000000000_C3;
   // payload=40aa11b7682df6d8 crc16=544a
+  assign test_pkt = 72'h40aa11b7682df6d8_C3;
 
 
   initial begin

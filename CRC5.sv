@@ -1,6 +1,6 @@
 `default_nettype none
 
-module CRC_Calc_FSM
+module CRC5_Calc_FSM
   (input  logic        clock, reset_n,
                        pkt_ready, // coming from protocol handler
                        bs_ready,
@@ -122,9 +122,9 @@ module CRC_Calc_FSM
       currState <= nextState;
   end
 
-endmodule : CRC_Calc_FSM
+endmodule : CRC5_Calc_FSM
 
-module CRC_Calc
+module CRC5_Calc
   (input  logic clock, reset_n,
                 pkt_ready,     // PH ready to send us a packet
                 bs_ready,      // BS ready to receive bits
@@ -142,7 +142,7 @@ module CRC_Calc
         crc_reg_shift;
   logic [2:0] crc_bit_sel;
   logic [31:0] pkt_bit_count, crc_bit_count;
-  CRC_Calc_FSM fsm (.*);
+  CRC5_Calc_FSM fsm (.*);
   // (input  logic        clock, reset_n,
   //                      pkt_ready, // coming from protocol handler
   //  input  logic [31:0] pkt_len, pkt_bit_count, crc_bit_count,
@@ -230,4 +230,4 @@ module CRC_Calc
       out_bit = pkt_bit;
  end
 
-endmodule : CRC_Calc
+endmodule : CRC5_Calc
