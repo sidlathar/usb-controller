@@ -1,0 +1,70 @@
+{
+    "MlibObjs": {},
+    "CurCompileUdps": {},
+    "LVLData": [
+        "SIM"
+    ],
+    "PrevCompiledModules": {
+        "std": {
+            "reYIK_d": {
+                "mode": 4,
+                "mod": "std",
+                "bytes": 29004,
+                "archive": "archive.21/_prev_archive_1.a",
+                "out": "reYIK_d.o"
+            }
+        },
+        "...MASTER...": {
+            "amcQw_d": {
+                "mode": 4,
+                "mod": "...MASTER...",
+                "bytes": 7336,
+                "out": "amcQw_d.o",
+                "archive": "archive.21/_6127_archive_1.a"
+            }
+        }
+    },
+    "PEModules": [],
+    "CompileStrategy": "fullobj",
+    "stat": {
+        "nMops": 907
+    },
+    "NameTable": {
+        "std": [
+            "std",
+            "reYIK",
+            "module"
+        ],
+        "BitStuffer_ENCODE_Test": [
+            "BitStuffer_ENCODE_Test",
+            "LL99y",
+            "module"
+        ],
+        "...MASTER...": [
+            "SIM",
+            "amcQw",
+            "module"
+        ]
+    },
+    "SIMBData": {
+        "out": "amcQwB.o",
+        "bytes": 60183
+    },
+    "Misc": {
+        "csrc_abs": "/afs/ece.cmu.edu/usr/slathar/Private/Class/18341/USB_sam/usb-sampromises/receive/csrc",
+        "cwd": "/afs/ece.cmu.edu/usr/slathar/Private/Class/18341/USB_sam/usb-sampromises/receive",
+        "csrc": "csrc",
+        "daidir": "simv.daidir",
+        "archive_dir": "archive.21",
+        "default_output_dir": "csrc",
+        "daidir_abs": "/afs/ece.cmu.edu/usr/slathar/Private/Class/18341/USB_sam/usb-sampromises/receive/simv.daidir"
+    },
+    "CurCompileModules": [
+        "...MASTER...",
+        "BitStuffer_ENCODE_Test"
+    ],
+    "CompileProcesses": [
+        "cgproc.6127.json"
+    ],
+    "CompileStatus": "Successful"
+}
