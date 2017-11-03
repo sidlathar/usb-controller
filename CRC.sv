@@ -5,8 +5,9 @@ module CRC_Calc_FSM
                        pkt_ready, // coming from protocol handler
                        bs_ready,
    input  logic [31:0] pkt_len, pkt_bit_count, crc_bit_count, crc_flush_cnt,
+   output logic  [2:0] crc_bit_sel,
    output logic        send_it, crc_load, out_sel, crc_do, crc_clr,
-                       crc_valid_out, crc_reg_shift);
+                       crc_valid_out);
 
   enum logic [4:0] {IDLE, WAIT_LOAD, IGNORE_PID, CALC_CRC, FLUSH_CRC,
                     PAUSE_CALC_CRC, PAUSE_EDGE,
@@ -14,7 +15,7 @@ module CRC_Calc_FSM
 
   always_comb begin
     {send_it, crc_load, out_sel, crc_do, crc_clr, crc_valid_out,
-     crc_reg_shift} = 7'b00_00010;
+     crc_bit_sel} = 9'b00_0001000;
 
     case (currState)
 
@@ -55,6 +56,8 @@ module CRC_Calc_FSM
           send_it = 1;
           crc_do = 1;
 
+          crc_load = 1;
+
           nextState = CALC_CRC;
         end else if (~bs_ready && crc_bit_count != (pkt_len - 1)) begin
           // Don't send any outputs, pause everything!
@@ -64,7 +67,7 @@ module CRC_Calc_FSM
 
           nextState = PAUSE_EDGE;
         end else if (bs_ready && crc_bit_count == (pkt_len - 1)) begin
-          crc_load = 1;
+          crc_do = 1;
 
           nextState = FLUSH_CRC;
         end
@@ -84,7 +87,7 @@ module CRC_Calc_FSM
 
       FLUSH_CRC : begin
         if (crc_flush_cnt != 32'd4 && bs_ready) begin
-          crc_reg_shift = 1;
+          crc_bit_sel = crc_flush_cnt;
           out_sel = 1;
 
           nextState = FLUSH_CRC;
@@ -92,7 +95,7 @@ module CRC_Calc_FSM
 
           nextState = PAUSE_FLUSH_CRC;
         end else begin
-          crc_reg_shift = 1;
+          crc_bit_sel = crc_flush_cnt;
           out_sel = 1;
 
           crc_valid_out = 0;
@@ -102,7 +105,7 @@ module CRC_Calc_FSM
       end
 
       PAUSE_FLUSH_CRC : begin
-        crc_reg_shift = 1;
+        crc_bit_sel = crc_flush_cnt;
         out_sel = 1;
 
         nextState = FLUSH_CRC;
@@ -137,6 +140,7 @@ module CRC_Calc
         send_it, // Sends pkt bits out serially by shifting PRR
         crc_do, crc_clr, // Tell CRC to do calculation
         crc_reg_shift;
+  logic [2:0] crc_bit_sel;
   logic [31:0] pkt_bit_count, crc_bit_count;
   CRC_Calc_FSM fsm (.*);
   // (input  logic        clock, reset_n,
@@ -166,15 +170,11 @@ module CRC_Calc
   // To hold our remainder from CRC calculation
   logic crc_bit;
   logic x0_D, x1_D, x2_D, x3_D, x4_D,
-        x0_Q, x1_Q, x2_Q, x3_Q, x4_Q; // Don't forget to complement
-  // CHANGED ORDER... BUT WE THOUGHT LSB -> MSB
-  PISO_Register_Left #(5) prl (.D({~x0_Q, ~x1_Q, ~x2_Q, ~x3_Q, ~x4_Q}),
-                               .Q(crc_bit), .load(crc_load),
-                               .shift(crc_reg_shift), .*);
-  // #(parameter W=24)
-  // (input  logic clock, load, shift,
-  //  input  logic [W-1:0] D,
-  //  output logic Q);
+        x0_Q, x1_Q, x2_Q, x3_Q, x4_Q;
+
+  logic [4:0] crc_result;
+  assign crc_result = {~x0_Q, ~x1_Q, ~x2_Q, ~x3_Q, ~x4_Q}; // Complement
+  assign crc_bit = crc_result[crc_bit_sel];
 
   always_comb begin
     x0_D = pkt_bit ^ x4_Q;
