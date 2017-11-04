@@ -84,8 +84,14 @@ module BitStuffer_FSM
       end
 
       RESUME_SEND : begin
-        if (crc_valid_out) begin
+        if (crc_valid_out && in_bit == 0) begin
           bs_sending = 1;
+          oc_clr = 1;
+
+          nextState = COUNT_ONES;
+        end else if (crc_valid_out && in_bit == 1) begin
+          bs_sending = 1;
+          oc_inc = 1;
 
           nextState = COUNT_ONES;
         end else begin
