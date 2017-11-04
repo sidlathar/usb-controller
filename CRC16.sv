@@ -7,7 +7,7 @@ module CRC16_Calc_FSM
    input  logic [31:0] pkt_len, pkt_bit_count, crc_bit_count, crc_flush_cnt,
    output logic  [3:0] crc_bit_sel,
    output logic        send_it, crc_load, out_sel, crc_do, crc_clr,
-                       crc_valid_out);
+                       crc_valid_out, crc_flush_cnt_inc, crc_flush_cnt_clr);
 
   enum logic [4:0] {IDLE, WAIT_LOAD, IGNORE_PID, CALC_CRC, FLUSH_CRC,
                     PAUSE_CALC_CRC, PAUSE_EDGE,
@@ -15,7 +15,7 @@ module CRC16_Calc_FSM
 
   always_comb begin
     {send_it, crc_load, out_sel, crc_do, crc_clr, crc_valid_out,
-     crc_bit_sel} = 10'b00_00010000;
+     crc_bit_sel, crc_flush_cnt_inc, crc_flush_cnt_clr} = 12'b00_0001000000;
 
     case (currState)
 
@@ -68,6 +68,7 @@ module CRC16_Calc_FSM
           nextState = PAUSE_EDGE;
         end else if (bs_ready && crc_bit_count == (pkt_len - 1)) begin
           crc_do = 1;
+          crc_flush_cnt_clr = 1; // NEW
 
           nextState = FLUSH_CRC;
         end
@@ -89,14 +90,18 @@ module CRC16_Calc_FSM
         if (crc_flush_cnt != 32'd15 && bs_ready) begin
           crc_bit_sel = crc_flush_cnt;
           out_sel = 1;
+          crc_flush_cnt_inc = 1;
 
           nextState = FLUSH_CRC;
         end else if (crc_flush_cnt != 32'd15 && ~bs_ready) begin
+          crc_bit_sel = crc_flush_cnt;
+          out_sel = 1;
 
           nextState = PAUSE_FLUSH_CRC;
         end else begin
           crc_bit_sel = crc_flush_cnt;
           out_sel = 1;
+          crc_flush_cnt_inc = 1;
 
           crc_valid_out = 0;
 
@@ -107,6 +112,7 @@ module CRC16_Calc_FSM
       PAUSE_FLUSH_CRC : begin
         crc_bit_sel = crc_flush_cnt;
         out_sel = 1;
+        crc_flush_cnt_inc = 1;
 
         nextState = FLUSH_CRC;
       end
@@ -141,6 +147,7 @@ module CRC16_Calc
         crc_do, crc_clr; // Tell CRC to do calculation
   logic [3:0] crc_bit_sel;
   logic [31:0] pkt_bit_count, crc_bit_count;
+  logic crc_flush_cnt_inc, crc_flush_cnt_clr;
   CRC16_Calc_FSM fsm (.*);
   // (input  logic        clock, reset_n,
   //                      pkt_ready, // coming from protocol handler
@@ -265,7 +272,9 @@ module CRC16_Calc
   always_ff @(posedge clock, negedge reset_n) begin
     if (~reset_n)
       crc_flush_cnt <= 0;
-    else if (out_sel) // out_sel enabled when flushing CRC out
+    else if (crc_flush_cnt_clr)
+      crc_flush_cnt <= 0;
+    else if (crc_flush_cnt_inc) // out_sel enabled when flushing CRC out
       crc_flush_cnt <= crc_flush_cnt + 1;
   end
 
