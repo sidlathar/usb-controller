@@ -77,6 +77,7 @@ module BitStuffer_FSM
       end
 
       SEND_ZERO : begin
+        bs_ready = 0; // IMPORTANT: TELLS CRC TO STOP AND HOLD VALUE FOR US
         sel_stuffbit = 1;
         bs_sending = 1;
 
@@ -85,6 +86,11 @@ module BitStuffer_FSM
 
       RESUME_SEND : begin
         if (crc_valid_out && in_bit == 0) begin
+          bs_sending = 1;
+
+          nextState = COUNT_ONES;
+        end else if (crc_valid_out && in_bit == 1) begin
+          oc_inc = 1; // Need to count this bit, too
           bs_sending = 1;
           oc_clr = 1;
 
