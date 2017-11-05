@@ -60,8 +60,8 @@ module PH_Sender
     out_pid = 8'b1110_0001;
     in_pid = 8'b0110_1001;
     data0_pid = 8'b1100_0011;
-    ack_pid = 8'b1101_0010;
-    nak_pid = 8'b0101_1010;
+    ack_pid = 8'b0001_1011; // HARD-CODED NRZI
+    nak_pid = 8'b0110_0011; // HARD-CODED NRZI
   end
 
   /*********************** OUT/IN PREPARATION FOR CRC5  ***********************/
@@ -122,7 +122,14 @@ module PH_Sender
 
   // FSM to send PID to DPDM
   logic start, ph_sending;
-  assign start = (send_ACK || send_NAK);
+  always_comb begin
+    if (send_ACK)
+      start = 1;
+    else if (send_NAK)
+      start = 1;
+    else
+      start = 0;
+  end
   SendPIDtoDPDM_FSM fsm (.shift(shift), .*);
   //   (input  logic clock, reset_n,
   //    input  logic start,

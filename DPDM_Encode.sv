@@ -168,21 +168,24 @@ module DPDM_Encode
 
   // HANDLE NRZI / PH INCOMING 
   logic in_bit, incoming_valid;
-  // always_comb begin
-  //   {in_bit, incoming_valid} = 2'b00; // defaults
+  always_comb begin
+    {in_bit, incoming_valid} = 2'b00; // defaults
 
-  //   if (nrzi_sending) begin
-  //     incoming_valid = 1;
-  //     in_bit = nrzi_in_bit;
-  //   end else if (ph_sending) begin
-  //     incoming_valid = 1;
-  //     in_bit = ph_in_bit;
-  //   end
+    if (nrzi_sending) begin
+      incoming_valid = 1;
+      in_bit = nrzi_in_bit;
+    end else if (ph_sending) begin
+      incoming_valid = 1;
+      in_bit = ph_in_bit;
+    end
 
-  // end
+  end
 
-  assign in_bit = nrzi_in_bit;
-  assign incoming_valid = nrzi_sending;
+  // assign in_bit = nrzi_in_bit;
+  // assign incoming_valid = nrzi_sending;
+
+  // assign in_bit = ph_in_bit;
+  // assign incoming_valid = ph_sending;
 
   // BUFFER TO HOLD INCOMING BITS WHILE WE SEND SYNC
   logic data_out, we, re;

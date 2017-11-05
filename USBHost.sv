@@ -127,20 +127,26 @@ module USBHost (
 
 
   task prelabRequest();
-    // send_OUT <= 1;
-    // @(posedge clock);
-    // send_OUT <= 0;
-    // @(posedge clock);
+  //   send_OUT <= 1;
+  //   @(posedge clock);
+  //   send_OUT <= 0;
+  //   @(posedge clock);
 
-    // send_DATA0 <= 1;
-    // @(posedge clock);
-    // send_DATA0 <= 0;
-    // @(posedge clock);
+    send_DATA0 <= 1;
+    @(posedge clock);
+    send_DATA0 <= 0;
+    @(posedge clock);
 
     // send_ACK <= 1;
     // @(posedge clock);
     // send_ACK <= 0;
     // @(posedge clock);
+
+    // send_NAK <= 1;
+    // @(posedge clock);
+    // send_NAK <= 0;
+    // @(posedge clock);
+
 
     repeat(100)
     @(posedge clock);
