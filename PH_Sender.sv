@@ -3,10 +3,10 @@
 module SendPIDtoDPDM_FSM
   (input  logic clock, reset_n,
    input  logic start,
-   input  logic [2:0] bit_cnt,
+   input  logic [3:0] bit_cnt,
    output logic shift, ph_sending, cnt_clr, cnt_inc);
 
-  enum logic {IDLE, SEND} currState, nextState;
+  enum logic [1:0] {IDLE, SEND} currState, nextState;
 
   always_comb begin
     {shift, ph_sending, cnt_clr, cnt_inc} = 4'b0000; // defaults
@@ -17,12 +17,13 @@ module SendPIDtoDPDM_FSM
           nextState = IDLE;
         end else begin
           cnt_clr = 1;
-          ph_sending = 1;
+
+          nextState = SEND;
         end
       end
 
       SEND : begin
-        if (bit_cnt != 3'd7) begin
+        if (bit_cnt != 4'd8) begin
           shift = 1;
           cnt_inc = 1;
           ph_sending = 1;
@@ -37,7 +38,7 @@ module SendPIDtoDPDM_FSM
   end
 
   always_ff @(posedge clock, negedge reset_n) begin
-    if (reset_n) begin
+    if (~reset_n) begin
       currState <= IDLE;
     end else begin
       currState <= nextState;
@@ -108,12 +109,12 @@ module PH_Sender
 
   // Counter for how many PID bits we've sent to DPDM
   logic cnt_inc, cnt_clr;
-  logic [2:0] bit_cnt;
+  logic [3:0] bit_cnt;
   always_ff @(posedge clock, negedge reset_n) begin
     if(~reset_n) begin
-      bit_cnt <= 3'd0;
+      bit_cnt <= 4'd0;
     end else if (cnt_clr) begin
-      bit_cnt <= 3'd0;
+      bit_cnt <= 4'd0;
     end else begin
       bit_cnt <= bit_cnt + 1;
     end
