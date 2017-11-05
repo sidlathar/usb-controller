@@ -1,5 +1,4 @@
 `default_nettype none
-// TODO : NOT SENDING ACK/NAK PROPERLY BECAUSE THEY'RE VERY SHORT PACKETS....
 
 // A special counter that will wrap-around at M
 module modCounter
@@ -49,7 +48,7 @@ module FIFO  (
   always_ff @ (posedge clock, negedge reset_n) begin
     if (~reset_n) begin
       size <= 4'd8;
-      Q <= 8'b0010_1010;
+      Q <= 8'b0010_1010; // Hard-coded SYNC
     end else begin
       if (re & we) begin
         // Read AND write, no need to update size
