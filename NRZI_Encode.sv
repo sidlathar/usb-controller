@@ -30,6 +30,7 @@ module NRZI_Encoder_FSM
 
           nextState = WORK;
         end else begin
+          
           nextState = IDLE;
         end
       end
