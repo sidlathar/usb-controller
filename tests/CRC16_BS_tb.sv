@@ -1,4 +1,4 @@
-`default_nettype none/* TESTBENCH BEGIN */
+`default_nettype none
 
 //SIPO left shift register
 module shiftRegister
@@ -24,7 +24,7 @@ module CRC16_tb;
   logic [71:0] pkt_in; // input
   logic pkt_ready, bs_ready, // inputs
         crc16_out_bit, crc16_valid_out; //output
-  CRC16_Calc crc16 (.out_bit(crc16_out_bit),
+  CRC16_Encode crc16 (.out_bit(crc16_out_bit),
                   .crc_valid_out(crc16_valid_out),
                    .*);
   // (input  logic clock, reset_n,
