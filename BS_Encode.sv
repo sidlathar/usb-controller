@@ -1,6 +1,6 @@
 `default_nettype none
 
-module BitStuffer_FSM
+module BS_Encode_FSM
   (input  logic        clock, reset_n,
                        crc_valid_out, in_bit,
    input  logic [31:0] ones_cnt, bit_cnt,
@@ -112,9 +112,9 @@ module BitStuffer_FSM
       currState <= nextState;
   end
 
-endmodule : BitStuffer_FSM
+endmodule : BS_Encode_FSM
 
-module BitStuffer
+module BS_Encode
   (input  logic clock, reset_n,
                 crc5_valid_out, crc5_in_bit,
                 crc16_valid_out, crc16_in_bit,                
@@ -138,7 +138,7 @@ module BitStuffer
   logic [31:0] ones_cnt, bit_cnt;
   logic oc_inc, oc_clr, bc_inc, bc_clr, sel_stuffbit;
 
-  BitStuffer_FSM fsm (.*);
+  BS_Encode_FSM fsm (.*);
   // (input  logic       clock, reset_n,
   //                     crc_valid_out, in_bit,
   // input  logic [31:0] ones_cnt, bit_cnt,
@@ -175,4 +175,4 @@ module BitStuffer
       out_bit = in_bit;
   end // always_comb
 
-endmodule : BitStuffer
+endmodule : BS_Encode

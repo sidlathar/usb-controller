@@ -66,7 +66,7 @@ module FIFO  (
 
 endmodule : FIFO
 
-module DPDM_FSM
+module DPDM_Encode_FSM
   (input  logic        clock, reset_n,
                        incoming_valid,
    input  logic [31:0] flush_count,
@@ -157,9 +157,9 @@ module DPDM_FSM
       currState <= nextState;
   end
 
-endmodule : DPDM_FSM
+endmodule : DPDM_Encode_FSM
 
-module DPDM
+module DPDM_Encode
   (input  logic clock, reset_n,
                 nrzi_in_bit, nrzi_sending,
                 ph_in_bit, ph_sending,
@@ -234,11 +234,11 @@ module DPDM
       {DP, DM} = eop_dpdm;
   end
 
-  DPDM_FSM fsm (.*);
+  DPDM_Encode_FSM fsm (.*);
   // (input  logic        clock, reset_n,
   //                      incoming_valid,
   //  input  logic [31:0] flush_count,
   //  output logic        re, we, out_sel, cnt_inc, cnt_clr,
   //  output logic  [1:0] eop_index); // 0, 1, or 2
 
-endmodule : DPDM
+endmodule : DPDM_Encode

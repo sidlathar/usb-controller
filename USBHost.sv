@@ -19,14 +19,14 @@ module USBHost (
   logic bs_ready, // input from BitStuffer
         crc5_out_bit, crc5_valid_out,
         crc16_out_bit, crc16_valid_out; // output to BitStuffer
-  CRC5_Calc   crc5 (.pkt_in(crc5_pkt_in), .pkt_ready(crc5_pkt_ready),
+  CRC5_Encode   crc5 (.pkt_in(crc5_pkt_in), .pkt_ready(crc5_pkt_ready),
                     .out_bit(crc5_out_bit), .crc_valid_out(crc5_valid_out),
                     .*);
 
   logic [71:0] crc16_pkt_in;
   logic crc16_pkt_ready;
 
-  CRC16_Calc crc16 (.pkt_in(crc16_pkt_in), .pkt_ready(crc16_pkt_ready),
+  CRC16_Encode crc16 (.pkt_in(crc16_pkt_in), .pkt_ready(crc16_pkt_ready),
                     .out_bit(crc16_out_bit), .crc_valid_out(crc16_valid_out),
                     .*);
 

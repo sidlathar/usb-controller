@@ -1,6 +1,6 @@
 `default_nettype none
 
-module NRZI_Encoder_FSM
+module NRZI_Encode_FSM
   (input logic clock, reset_n,
                in_bit, bs_sending,
    output logic out_sel, nrzi_sending);
@@ -46,9 +46,9 @@ module NRZI_Encoder_FSM
       currState <= nextState;
   end
   
-endmodule : NRZI_Encoder_FSM
+endmodule : NRZI_Encode_FSM
 
-module NRZI_Encoder
+module NRZI_Encode
   (input logic clock, reset_n,
                in_bit, bs_sending,
    output logic out_bit, nrzi_sending);
@@ -85,9 +85,9 @@ module NRZI_Encoder
   end
 
   // THE FSM
-  NRZI_Encoder_FSM fsm (.*);
+  NRZI_Encode_FSM fsm (.*);
   // (input logic clock, reset_n,
   //              in_bit, bs_sending
   //  output logic out_sel, nrzi_sending);
 
-endmodule : NRZI_Encoder
+endmodule : NRZI_Encode
