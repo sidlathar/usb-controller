@@ -144,7 +144,7 @@ module CRC16_Encode
 
   /************************** PISO STREAM OUT BEGIN **************************/
   logic pkt_bit, send_it; // Packet bit going into MUX
-  PISO_Register_Right prr (.D(pkt_in), .load(pkt_ready), .shift(send_it),
+  PISO_Register_Right #(72) prr (.D(pkt_in), .load(pkt_ready), .shift(send_it),
                            .Q(pkt_bit), .*);
   //   #(parameter W=100)
   //   (input  logic clock, load, shift,
