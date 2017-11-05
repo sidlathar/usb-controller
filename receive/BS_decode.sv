@@ -112,16 +112,6 @@ module BitStuffer_decode
     end
   end
 
-  // COUNT THE BITS FOR IGNORING PID
-  // always_ff @(posedge clock, negedge reset_n) begin
-  //   if(~reset_n) begin
-  //     bit_cnt <= 0;
-  //   end else if (bc_clr) begin
-  //     bit_cnt <= 0;
-  //   end else if (bc_inc) begin
-  //     bit_cnt <= bit_cnt + 1;
-  //   end
-  // end
 
   // MUX THE BITSTREAM, OR CHOOSE TO SEND A BITSTUFF (0)
   always_comb begin
