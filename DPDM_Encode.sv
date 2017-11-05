@@ -68,7 +68,7 @@ endmodule : FIFO
 
 module DPDM_FSM
   (input  logic        clock, reset_n,
-                       nrzi_sending,
+                       incoming_valid,
    input  logic [31:0] flush_count,
    output logic        re, we, cnt_inc, cnt_clr, out_done,
    output logic  [1:0] eop_index, out_sel); // 0, 1, or 2
@@ -81,7 +81,7 @@ module DPDM_FSM
 
     case (currState)
       IDLE: begin
-        if (~nrzi_sending) begin
+        if (~incoming_valid) begin
           nextState = IDLE;
         end else begin
           out_sel = 2'd1;
@@ -93,7 +93,7 @@ module DPDM_FSM
       end
 
       PACKET : begin
-        if (nrzi_sending) begin
+        if (incoming_valid) begin
           out_sel = 2'd1;
           re = 1;
           we = 1;
@@ -161,8 +161,23 @@ endmodule : DPDM_FSM
 
 module DPDM
   (input  logic clock, reset_n,
-                in_bit, nrzi_sending,
+                nrzi_in_bit, nrzi_sending,
+                ph_in_bit, ph_sending,
    output logic DP, DM, out_done);
+
+  // HANDLE NRZI / PH INCOMING 
+  logic in_bit, incoming_valid;
+  always_comb begin
+    {in_bit, incoming_valid} = 2'b00; // defaults
+
+    if (nrzi_sending) begin
+      incoming_valid = 1;
+      in_bit = nrzi_in_bit;
+    end else if (ph_sending) begin
+      incoming_valid = 1;
+      in_bit = ph_in_bit;
+    end
+  end
 
   // BUFFER TO HOLD INCOMING BITS WHILE WE SEND SYNC
   logic data_out, we, re;
@@ -221,7 +236,7 @@ module DPDM
 
   DPDM_FSM fsm (.*);
   // (input  logic        clock, reset_n,
-  //                      nrzi_sending,
+  //                      incoming_valid,
   //  input  logic [31:0] flush_count,
   //  output logic        re, we, out_sel, cnt_inc, cnt_clr,
   //  output logic  [1:0] eop_index); // 0, 1, or 2
