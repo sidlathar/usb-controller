@@ -41,3 +41,21 @@ module PISO_Register_Left
   end
 
 endmodule : PISO_Register_Left
+
+// 
+
+module SIPO_Register_Right
+  #(parameter WIDTH=8)
+  (input  logic             D,
+   input  logic             load, clock, reset_n,
+   output logic [WIDTH-1:0] Q);
+   
+  always_ff @(posedge clock, negedge reset_n) begin
+    if (~reset_n)
+      Q <= 0;
+    else if (load)
+      Q <= {D, Q[WIDTH-1:1]};
+  end
+      
+endmodule : SIPO_Register_Right
+
