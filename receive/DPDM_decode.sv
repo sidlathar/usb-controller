@@ -1,6 +1,7 @@
 `default_nettype none
 
 module DPDM_decode_FSM(
+	input logic clock, reset_n,
 	input logic sync_rec, se0_rec, in_bit, rec_start,
 	input logic [2:0] PID_rec,
 	input logic [31:0] bit_count,
@@ -128,6 +129,18 @@ module DPDM_decode_FSM(
 
 endmodule : DPDM_decode_FSM
 
-
+// input logic clock, reset_n,
+// 	input logic sync_rec, se0_rec, in_bit, rec_start,
+// 	input logic [2:0] PID_rec,
+// 	input logic [31:0] bit_count,
+// 	output logic dpdm_sending, rec_failed, clr_cnt, ACK_rec, NAK_rec, DATA0_rec
 module DPDM_decode(
-	);
+	input logic clock, reset_n,
+	input logic DP_in, DM_in, rec_start,
+	output logic out_bit);
+
+	logic clr_cnt, sync_rec, se0_rec;
+	logic [2:0] PID_rec;
+	logic [31:0] bit_count;
+
+	DPDM_decode_FSM fsm (.*);
