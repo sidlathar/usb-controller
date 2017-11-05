@@ -59,7 +59,7 @@ module BitStuffer_FSM
 
           nextState = COUNT_ONES;
         end else if (~crc_valid_out) begin
-          bs_sending = 1;
+          // bs_sending = 1;
 
           nextState = IDLE;
         end else if (in_bit == 1 && ones_cnt == 32'd5) begin
@@ -116,8 +116,24 @@ endmodule : BitStuffer_FSM
 
 module BitStuffer
   (input  logic clock, reset_n,
-                crc_valid_out, in_bit,
+                crc5_valid_out, crc5_in_bit,
+                crc16_valid_out, crc16_in_bit,                
    output logic out_bit, bs_ready, bs_sending);
+
+  // HANDLING CRC5 / CRC 16 SMOOTHLY
+  logic crc_valid_out, in_bit;
+  always_comb begin
+    {crc_valid_out, in_bit} = 2'b00; // default values
+
+    if (crc5_valid_out) begin
+      crc_valid_out = 1;
+      in_bit = crc5_in_bit;
+    end else if (crc16_valid_out) begin
+      crc_valid_out = 1;
+      in_bit = crc16_in_bit;
+    end
+
+  end
 
   logic [31:0] ones_cnt, bit_cnt;
   logic oc_inc, oc_clr, bc_inc, bc_clr, sel_stuffbit;
