@@ -74,7 +74,7 @@ module DPDM_Encode_FSM
    output logic  [1:0] eop_index, out_sel); // 0, 1, or 2
 
   enum logic [2:0] {IDLE, PACKET, FLUSH,
-                    EOP_0, EOP_1, EOP_2} currState, nextState;
+                    EOP_0, EOP_1, EOP_2, DONE} currState, nextState;
  
   always_comb begin
     {re, we, cnt_inc, cnt_clr, eop_index, out_sel, out_done} = 9'b0_0000_0000;
@@ -141,7 +141,14 @@ module DPDM_Encode_FSM
       EOP_2 : begin
         out_sel = 2'd2;
         eop_index = 2'd2;
-        out_done = 1; // DONE SENDING THIS ENTIRE PACKET
+        // out_done = 1; // DONE SENDING THIS ENTIRE PACKET
+
+        nextState = DONE;
+      end
+
+      DONE : begin
+        // The only purpose of this state to send out_done at right time
+        out_done = 1; 
 
         nextState = IDLE;
       end
