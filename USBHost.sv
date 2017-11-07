@@ -24,12 +24,17 @@ module USBHost (
 
   // PRELAB: OUT, addr=5, ENDP=4, crc5=10
   // assign test_pkt_crc5 = 19'b0100_0000101_11100001; 
-  assign endp = 4'd4;
-
+  // assign endp = 4'd4;
+  assign endp = 4'b1111; // Most we can do to stress bitstuffer
+ 
   // payload=0f21000000000000 crc16=a0e7
   // assign data = 64'h0f21000000000000;
   // payload=40aa11b7682df6d8 crc16=544a
-  assign data = 64'h40aa11b7682df6d8;
+  // assign data = 64'h40aa11b7682df6d8;
+
+  // assign data = 64'h7f0811b7682df6d8; // ZERO, THEN SEVEN ONES -> GOOD
+  // assign data = 64'hfc0811b7682df6d8; // SIX ONES AT END -> FAIL
+  assign data = 64'hfe0811b7682df6d8; // SEVEN ONES AT END -> FAIL
 
 
   // // Assign DP, DM to the wire
@@ -40,9 +45,9 @@ module USBHost (
   task prelabRequest();
     // send_OUT <= 1; @(posedge clock); send_OUT <= 0; @(posedge clock);
     // send_IN <= 1; @(posedge clock); send_IN <= 0; @(posedge clock);
-    // send_DATA0 <= 1; @(posedge clock); send_DATA0 <= 0; @(posedge clock);
+    send_DATA0 <= 1; @(posedge clock); send_DATA0 <= 0; @(posedge clock);
     // send_ACK <= 1; @(posedge clock); send_ACK <= 0; @(posedge clock);
-    send_NAK <= 1; @(posedge clock); send_NAK <= 0; @(posedge clock);
+    // send_NAK <= 1; @(posedge clock); send_NAK <= 0; @(posedge clock);
 
     repeat(100)
     @(posedge clock);

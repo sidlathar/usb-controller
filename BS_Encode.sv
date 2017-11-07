@@ -8,7 +8,7 @@ module BS_Encode_FSM
                        bs_sending);
 
   enum logic [2:0] {IDLE, IGNORE_PID, COUNT_ONES, SEND_ZERO,
-                    RESUME_SEND} currState, nextState;
+                    RESUME_SEND, SEND_LAST} currState, nextState;
 
   always_comb begin
     {bs_ready, oc_inc, oc_clr, bc_inc, bc_clr, sel_stuffbit,
@@ -76,11 +76,19 @@ module BS_Encode_FSM
       end
 
       SEND_ZERO : begin
-        bs_ready = 0; // IMPORTANT: TELLS CRC TO STOP AND HOLD VALUE FOR US
-        sel_stuffbit = 1;
-        bs_sending = 1;
+        if (crc_valid_out) begin
+          bs_ready = 0; // IMPORTANT: TELLS CRC TO STOP AND HOLD VALUE FOR US
+          sel_stuffbit = 1;
+          bs_sending = 1;
 
-        nextState = RESUME_SEND;
+          nextState = RESUME_SEND;
+        end else begin
+          bs_ready = 0; // IMPORTANT: TELLS CRC TO STOP AND HOLD VALUE FOR US
+          sel_stuffbit = 1;
+          bs_sending = 1;
+
+          nextState = IDLE;
+        end
       end
 
       RESUME_SEND : begin
@@ -94,8 +102,8 @@ module BS_Encode_FSM
           bs_sending = 1;
 
           nextState = COUNT_ONES;
-        end else begin
-          bs_sending = 1;
+        end else if (~crc_valid_out) begin
+          // bs_sending = 1;
 
           nextState = IDLE;
         end

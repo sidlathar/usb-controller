@@ -67,7 +67,10 @@ module CRC16_Encode_FSM
           // Don't send any outputs, pause everything!
           nextState = PAUSE_CALC_CRC;
         end else if (~bs_ready && crc_bit_count == (PKT_LEN - 1)) begin
-          
+          // EDGE CASE ! ! !
+          crc_do = 1;
+          crc_flush_cnt_clr = 1; // NEW
+
           nextState = PAUSE_EDGE;
         end else if (bs_ready && crc_bit_count == (PKT_LEN - 1)) begin
           crc_do = 1;
@@ -85,7 +88,7 @@ module CRC16_Encode_FSM
       end
 
       PAUSE_EDGE : begin
-
+        // Bitstuffer just stuffed a 1, grabbing the 0th CRC bit
         nextState = FLUSH_CRC;
       end
 
