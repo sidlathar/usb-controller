@@ -30,6 +30,7 @@ module NRZI_decoder_FSM
 
           nextState = WORK;
         end else begin
+          nrzi_sending = 1;
           nextState = IDLE;
         end
       end
@@ -57,7 +58,7 @@ module NRZI_decoder
   always_ff @(posedge clock, negedge reset_n) begin
     if(~reset_n) begin
       //prev_bit <= 0;    // prev bit should be 0
-      prev_bit <= 1;
+      prev_bit <= 0;
     end else begin
       // Load in_bit every clock edge
       //prev_bit <= out_bit;
@@ -83,7 +84,7 @@ module NRZI_decoder
       out_bit = NRZI_bit;
     else
       //out_bit = prev_bit;
-      out_bit = 1;
+      out_bit = 0;
   end
 
   // THE FSM

@@ -8,7 +8,8 @@ module CRC16_Decode_FSM
    output logic crc_flush_cnt_clr, crc_sending, crc_clr,
    output logic [31:0] crc_bit_sel);
 
-  enum logic [3:0] {IDLE,  CALC_CRC, PAUSE_CALC_CRC, FLUSH_CRC} currState, nextState;
+  enum logic [3:0] {IDLE,  CALC_CRC, PAUSE_CALC_CRC, FLUSH_CRC} currState, 
+                  nextState;
 
   // CONSTANTS
   logic [31:0] PID_LEN, PKT_LEN, CRC16_LEN;
@@ -112,8 +113,8 @@ module CRC16_Decode
 
   logic [15:0] crc_result;
   logic [31:0] crc_bit_sel;
-  assign crc_result = {~x0_Q, ~x1_Q, ~x2_Q, ~x3_Q, ~x4_Q, ~x5_Q, ~x6_Q, ~x7_Q,
-  ~x8_Q, ~x9_Q, ~x10_Q, ~x11_Q, ~x12_Q, ~x13_Q, ~x14_Q, ~x15_Q}; // Complement
+  assign crc_result = {x15_Q, x14_Q, x13_Q, x12_Q, x11_Q, x10_Q, x9_Q, x8_Q,
+  x7_Q, x6_Q, x5_Q, x4_Q, x3_Q, x2_Q, x1_Q, x0_Q}; // Complement
   assign crc_bit = crc_result[crc_bit_sel];
 
   always_comb begin
@@ -221,6 +222,15 @@ module CRC16_Decode
     else
       out_bit = in_bit;
  end
+
+  logic [15:0] capture_residue;
+  // assign capture_residue = (bs_sending)? crc_result: capture_residue;
+  always_ff @(posedge clock, negedge reset_n) begin
+    if (~reset_n)
+      capture_residue <= 16'bz;
+    else if (bs_sending)
+      capture_residue <= crc_result;
+  end
 
  /*********************************** FSM ***********************************/
 

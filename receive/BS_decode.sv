@@ -30,7 +30,7 @@ module BitStuffer_Decode_FSM
 
       COUNT_ONES : begin
         if(~nrzi_sending) begin
-          bs_sending  = 1;
+          bs_sending  = 0;
 
           nextState = IDLE;
         end
