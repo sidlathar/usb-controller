@@ -5,7 +5,8 @@ module CRC16_Decode_FSM
    input  logic bs_sending,
    input logic [31:0] crc_flush_cnt,
    output logic crc_do, out_sel, crc_flush_cnt_inc, 
-   output logic crc_flush_cnt_clr, crc_sending, crc_bit_sel, crc_clr);
+   output logic crc_flush_cnt_clr, crc_sending, crc_clr,
+   output logic [31:0] crc_bit_sel);
 
   enum logic [3:0] {IDLE,  CALC_CRC, PAUSE_CALC_CRC, FLUSH_CRC} currState, nextState;
 
@@ -18,7 +19,7 @@ module CRC16_Decode_FSM
   always_comb begin
     {crc_do, out_sel, crc_flush_cnt_inc, 
           crc_flush_cnt_clr, crc_sending,
-                 crc_bit_sel, crc_clr} = 7'b0000_000;
+                 crc_bit_sel, crc_clr} = 'b0;
 
     unique case (currState)
       
@@ -57,7 +58,7 @@ module CRC16_Decode_FSM
         end else begin
           crc_flush_cnt_inc = 1;
           out_sel = 1;
-          crc_bit_sel = crc_bit_count;
+          crc_bit_sel = crc_flush_cnt;
           crc_sending = 1;
 
           nextState = FLUSH_CRC;
@@ -65,16 +66,17 @@ module CRC16_Decode_FSM
       end
 
       FLUSH_CRC: begin 
-        if(crc_bit_count != 32'd15) begin
+        if(crc_flush_cnt != 32'd15) begin
           crc_flush_cnt_inc = 1;
           out_sel = 1;
-          crc_bit_sel = crc_bit_count;
+          crc_bit_sel = crc_flush_cnt;
           crc_sending = 1;
 
           nextState = FLUSH_CRC;
         end else begin
           nextState = IDLE;
           crc_clr = 1;
+          crc_flush_cnt_clr = 1;
         end
       end
       
@@ -109,13 +111,13 @@ module CRC16_Decode
         x8_Q, x9_Q, x10_Q, x11_Q, x12_Q, x13_Q, x14_Q, x15_Q;
 
   logic [15:0] crc_result;
-  logic [3:0] crc_bit_sel;
+  logic [31:0] crc_bit_sel;
   assign crc_result = {~x0_Q, ~x1_Q, ~x2_Q, ~x3_Q, ~x4_Q, ~x5_Q, ~x6_Q, ~x7_Q,
   ~x8_Q, ~x9_Q, ~x10_Q, ~x11_Q, ~x12_Q, ~x13_Q, ~x14_Q, ~x15_Q}; // Complement
   assign crc_bit = crc_result[crc_bit_sel];
 
   always_comb begin
-    x0_D = pkt_bit ^ x15_Q;
+    x0_D = in_bit ^ x15_Q;
     x1_D = x0_Q;
     x2_D = x1_Q ^ x0_D;
     x3_D = x2_Q;
