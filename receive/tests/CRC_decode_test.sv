@@ -30,18 +30,18 @@ module CRC16_DECODE_Test;
   CRC16_Decode dut (.*);
 
   // TESTING RECEIVING PACKET
-  logic [23:0] pkt_received;
-  shiftRegister #(24) sr (.D(out_bit), .Q(pkt_received), .load(crc_sending), .*);
+  logic [79:0] pkt_received;
+  shiftRegister #(80) sr (.D(out_bit), .Q(pkt_received), .load(crc_sending), .*);
 
   // PACKET TO SEND
-  logic [23:0] pkt_in;
-  // assign pkt_in = 40'hFFFFFFFFFF;
-  //assign pkt_in = 24'b110111111001111110000000;
-  assign pkt_in = 24'b110111111001111110111111;
+  logic [79:0] pkt_in;
+
+  //assign pkt_in = 80'h544a_40aa11b7682df6d8; works!
+  //assign pkt_in = 80'ha0e7_0f21000000000000; works!
 
   initial begin
-    $monitor ($stime,, "crc_sending: %b, in_bit: %b | out_bit: %b, bs_sending: %b | fc: %d, cs: %s | ns: %s, pkt: %b, crcreg = %h",
-                      crc_sending, in_bit, out_bit, bs_sending,  dut.crc_flush_cnt, dut.fsm.currState, dut.fsm.nextState, pkt_received, dut.crc_result);
+    $monitor ($stime,, "crc_sending: %b, in_bit: %b | out_bit: %b, bs_sending: %b | fc: %d, cs: %s | ns: %s, pkt: %h, crcreg = %h, reside: %h",
+                      crc_sending, in_bit, out_bit, bs_sending,  dut.crc_flush_cnt, dut.fsm.currState, dut.fsm.nextState, pkt_received, dut.crc_result, dut.capture_residue);
     clock = 0;
     reset_n = 0;
     reset_n <= #1 1;
@@ -50,16 +50,7 @@ module CRC16_DECODE_Test;
 
   initial begin
 
-    for (int i = 0; i < 19; i++) begin
-        bs_sending <= 1;
-        in_bit <= pkt_in[i];
-      @(posedge clock);
-    end
-    bs_sending <= 0;
-    @(posedge clock);
-    
-
-    for (int i = 19; i < 24; i++) begin
+    for (int i = 0; i < 80; i++) begin
         bs_sending <= 1;
         in_bit <= pkt_in[i];
       @(posedge clock);

@@ -16,7 +16,7 @@ module shiftRegister
   end
 
 endmodule : shiftRegister
-module BitStuffer_ENCODE_Test;
+module BitStuffer_DECODE_Test;
   logic clock, reset_n,
         nrzi_sending, in_bit, // inputs
         out_bit, bs_sending; // outputs
@@ -53,4 +53,4 @@ module BitStuffer_ENCODE_Test;
     #1 $finish;
   end
 
-endmodule : BitStuffer_ENCODE_Test
+endmodule : BitStuffer_DECODE_Test
