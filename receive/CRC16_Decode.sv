@@ -253,7 +253,7 @@ module CRC16_Decode
   end
 
  /*********************************** FSM ***********************************/
- logic crc_valid;
+ 
  CRC16_Decode_FSM fsm (.crc_valid(crc_valid), .*);
  DATA0_REG d0reg(.D(out_bit), .Q(data0), .load(crc_sending), .*); //W = 64
  // (input  logic        clock, reset_n,
