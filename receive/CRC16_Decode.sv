@@ -1,7 +1,7 @@
 `default_nettype none
 
 module DATA0_REG
-  #(parameter WIDTH=64)
+  #(parameter WIDTH=80)
   (input  logic             D,
    input  logic             load, clock, reset_n,
    output logic [WIDTH-1:0] Q);
@@ -118,7 +118,7 @@ endmodule : CRC16_Decode_FSM
 
 module CRC16_Decode
   (input  logic clock, reset_n,
-                bs_sending,     
+                bs_sending, load_data,     
    input  logic in_bit,
    output logic out_bit, 
                 crc_sending, crc_valid,
@@ -136,6 +136,18 @@ module CRC16_Decode
   assign crc_result = {x15_Q, x14_Q, x13_Q, x12_Q, x11_Q, x10_Q, x9_Q, x8_Q,
   x7_Q, x6_Q, x5_Q, x4_Q, x3_Q, x2_Q, x1_Q, x0_Q};
   assign crc_bit = crc_result[crc_bit_sel];
+
+
+  logic [79:0] data0_plus_crc;
+
+  always_comb begin
+    if(load_data) begin
+      data0 = data0_plus_crc[63:0];
+    end
+    else begin
+      data0 = data0;
+    end
+  end
 
   always_comb begin
     x0_D = in_bit ^ x15_Q;
@@ -255,7 +267,7 @@ module CRC16_Decode
  /*********************************** FSM ***********************************/
  
  CRC16_Decode_FSM fsm (.crc_valid(crc_valid), .*);
- DATA0_REG d0reg(.D(out_bit), .Q(data0), .load(crc_sending), .*); //W = 64
+ DATA0_REG d0reg(.D(out_bit), .Q(data0_plus_crc), .load(crc_sending), .*); //W = 64
  // (input  logic        clock, reset_n,
  //                      pkt_ready, // coming from protocol handler
  //  input  logic [31:0] pkt_len, pkt_bit_count, crc_bit_count,

@@ -2,9 +2,9 @@
 
 module DPDM_decode_FSM(
 	input logic clock, reset_n,
-	input logic sync_rec, se0_rec, in_bit, rec_start,
+	input logic sync_rec, se0_rec, in_bit, fsm_start,
 	input logic [2:0] PID_rec,
-	output logic dpdm_sending, ACK_rec, NAK_rec, DATA0_rec);
+	output logic dpdm_sending, ACK_rec, NAK_rec, DATA0_rec, rec_start, load_data);
 
 	enum logic [4:0] {DEAD, WAITSYNC, WAITPID, ACK_R, NAK_R, 
 						DATA0_R, EOP0, EOP1, EOP2} currState, nextState;
@@ -17,16 +17,16 @@ module DPDM_decode_FSM(
 	assign DATA0_PID = 3'b100;
 
 	always_comb begin
-    {dpdm_sending, ACK_rec, NAK_rec, DATA0_rec} = 4'b0000;
+    {dpdm_sending, ACK_rec, NAK_rec, DATA0_rec, rec_start, load_data} = 4'b0000_00;
 
     unique case (currState)
     	DEAD: begin
-    		if(~rec_start) begin
+    		if(~fsm_start) begin
 
     			nextState = DEAD;
     		end
     		else begin
-
+                rec_start = 1;
     			nextState = WAITSYNC;
     		end
     	end
@@ -81,7 +81,7 @@ module DPDM_decode_FSM(
 
     	DATA0_R: begin 
     		if(se0_rec) begin 
-
+                load_data = 1;
     			nextState = EOP0;
     		end 
     		else begin 
@@ -131,8 +131,8 @@ endmodule : DPDM_decode_FSM
 // 	output logic dpdm_sending, clr_cnt, ACK_rec, NAK_rec, DATA0_rec
 module DPDM_decode(
 	input logic clock, reset_n,
-	input logic DP_in, DM_in, rec_start,
-	output logic out_bit, dpdm_sending);
+	input logic DP_in, DM_in,
+	output logic out_bit, dpdm_sending, rec_start, load_data);
 
 	logic sync_rec, se0_rec;
 	logic [2:0] PID_rec;
@@ -140,10 +140,23 @@ module DPDM_decode(
 	logic [7:0] match_val;
     logic clr_cnt, ACK_rec, NAK_rec, DATA0_rec;
 
+    logic fsm_start, load_data;
 	DPDM_decode_FSM fsm (.in_bit(out_bit), .*);
 
 	SIPO_Register_Right matchReg (.D(out_bit), .load(load_matchReg), 
 									.Q(match_val),  .*);
+
+
+    always_comb begin
+        if(DP_in === 1'bz && DM_in === 1'bz) begin
+            fsm_start = 0;
+        end else begin
+            fsm_start = 1;
+        end
+    
+    end
+
+
 
 
 	always_ff @(posedge clock, negedge reset_n) begin
