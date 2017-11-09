@@ -17,7 +17,8 @@ module DPDM_decode_FSM(
 	assign DATA0_PID = 3'b100;
 
 	always_comb begin
-    {dpdm_sending, ACK_rec, NAK_rec, DATA0_rec, rec_start, load_data} = 4'b0000_00;
+    {dpdm_sending, ACK_rec, NAK_rec, DATA0_rec, rec_start,
+     load_data} = 6'b0000_00;
 
     unique case (currState)
     	DEAD: begin
@@ -141,12 +142,11 @@ module DPDM_decode(
 	logic [7:0] match_val;
     logic clr_cnt;
 
-    logic fsm_start, load_data;
+    logic fsm_start;
 	DPDM_decode_FSM fsm (.in_bit(out_bit), .*);
 
 	SIPO_Register_Right matchReg (.D(out_bit), .load(load_matchReg), 
 									.Q(match_val),  .*);
-
 
     always_comb begin
         if(DP_in === 1'bz && DM_in === 1'bz) begin
@@ -157,9 +157,6 @@ module DPDM_decode(
     
     end
 
-
-
-
 	always_ff @(posedge clock, negedge reset_n) begin
 		if(~reset_n) begin
 			 load_matchReg <= 0;
@@ -167,7 +164,6 @@ module DPDM_decode(
 			 load_matchReg <= 1;
 		end
 	end
-
 
 	always_comb begin
 		{out_bit, se0_rec} = 2'bz0;
