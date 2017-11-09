@@ -132,13 +132,14 @@ endmodule : DPDM_decode_FSM
 module DPDM_decode(
 	input logic clock, reset_n,
 	input logic DP_in, DM_in,
-	output logic out_bit, dpdm_sending, rec_start, load_data);
+	output logic out_bit, dpdm_sending, rec_start, load_data,
+    output logic ACK_rec, NAK_rec, DATA0_rec);
 
 	logic sync_rec, se0_rec;
 	logic [2:0] PID_rec;
 	logic load_matchReg;
 	logic [7:0] match_val;
-    logic clr_cnt, ACK_rec, NAK_rec, DATA0_rec;
+    logic clr_cnt;
 
     logic fsm_start, load_data;
 	DPDM_decode_FSM fsm (.in_bit(out_bit), .*);
