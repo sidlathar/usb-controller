@@ -66,14 +66,15 @@ endmodule: PH_Receiver_fsm
 module PH_Receiver
 	(input logic clock, reset_n,
 	output logic rec_ACK, rec_NAK, rec_DATA0,
-	output logic [63:0] data_rec, data_valid); //TO READ WRITE FSM
+	output logic [63:0] data_rec, 
+	output logic data_valid, rec_start); //TO READ WRITE FSM
 
 
 	// input logic clock, reset_n,
 	// input logic DP_in, DM_in,
 	// output logic out_bit, dpdm_sending, rec_start, load_data,
 	// output logic ACK_rec, NAK_rec, DATA0_rec);
-	logic DP_in, DM_in, rec_start;
+	logic DP_in, DM_in;
 	logic dpdm_out_bit, dpdm_sending, load_data;
 	logic ACK_rec, NAK_rec, DATA0_rec;
 
