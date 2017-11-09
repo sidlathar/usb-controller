@@ -19,7 +19,13 @@ module RW_FSM
   // Mux which endp to send to PH_Sender
   logic [3:0] out_endp;
   logic out_endp_sel; // 0 -> 4'd4, 1 -> 4'd8
-  assign out_endp = (out_endp_sel) ? 4'd8 : 4'd4;
+  always_comb begin
+    out_endp = 4'dx; // Default to X's
+    if (out_endp_sel)
+      out_endp = 4'd8;
+    else
+      out_endp = 4'd4;
+  end
 
   // Mux which data to send to PH_Sender
   logic [63:0] out_data;
@@ -86,7 +92,7 @@ module RW_FSM
   // input  logic        rec_DATA0, data_valid, rec_start,
   // input  logic [63:0] data_rec);
 
-  
+
   // SENDING SIGNAL (WHENEVER DP/DM IS BEING DRIVEN BY US, THE SENDER)
   assign sending = (out_sending || in_sending);
 
@@ -99,7 +105,10 @@ module RW_FSM
 
   // Output and NS logic
   always_comb begin
-    {read_success, write_success} = 2'b00;
+    {read_success, write_success, out_trans_start, in_trans_start,
+     out_endp_sel, out_data_sel} = 6'b0;
+     
+     nextState = currState;
 
     case (currState)
       IDLE: begin
@@ -158,7 +167,7 @@ module RW_FSM
           nextState = WRITE_OUT_ADDR;
         end else if (out_trans_success) begin
           // OUT transaction succeeded
-          out_endp_sel = 8; //endp = 1
+          out_endp_sel = 1; //endp = 8
           out_data_sel = 2'd2; // data = write_data
 
           nextState = WRITE_OUT_DATA;
