@@ -57,7 +57,7 @@ module NRZI_DPDM_Send_tb;
   assign test_pkt = 88'h544a_40aa11b7682df6d8_C3;
 
   initial begin
-    $monitor ($stime,, "pkt_in: %h | DP: %b, DM: %b, out_done: %b | ANS: %h",
+    $monitor ($stime,, "pkt_in: %b | DP: %b, DM: %b, out_done: %b | ANS: %b",
                      test_pkt, DP_out, DM_out, out_done, pkt_received);
     clock = 0;
     reset_n = 0;
