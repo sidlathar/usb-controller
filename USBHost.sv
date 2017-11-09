@@ -34,7 +34,12 @@ module USBHost (
 
   // assign data = 64'h7f0811b7682df6d8; // ZERO, THEN SEVEN ONES -> GOOD
   // assign data = 64'hfc0811b7682df6d8; // SIX ONES AT END -> FAIL
-  assign data = 64'hfe0811b7682df6d8; // SEVEN ONES AT END -> FAIL
+  // assign data = 64'hfe0811b7682df6d8; // SEVEN ONES AT END -> FAIL
+
+  // assign data = 64'hfff1000000000000;
+
+  assign data = 64'hfef811b7682df6d8;
+
 
 
   // // Assign DP, DM to the wire
