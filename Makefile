@@ -4,6 +4,7 @@ TARGET = simv
 # Source files
 SRC = USBHost.sv USBDevice.svp USBTB.sv
 SRC += $(wildcard *.sv)
+SRC += $(wildcard ./receive/*.sv)
 SRC := $(sort $(SRC)) # Removes duplicates
 
 # Set the number of threads to use for parallel compilation (2 * cores)
