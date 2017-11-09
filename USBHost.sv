@@ -9,48 +9,34 @@ module USBHost (
   USBWires wires,
   input logic clock, reset_n
 );
-
-  logic send_OUT, send_IN, send_DATA0, send_ACK, send_NAK; // Inputs
-  logic [3:0] endp; // Input
-  logic [63:0] data; // Input
-  logic DP_out, DM_out, out_done; // Outputs
-  PH_Sender dut (.*);
-  // module PH_Sender
-  //   (input  logic        clock, reset_n,
-  //                        send_OUT, send_IN, send_DATA0, send_ACK, send_NAK,
-  //    input  logic  [3:0] endp,  // If we need it for OUT or IN
-  //    input  logic [63:0] data,  // If we need it for DATA0
-  // output logic        DP_out, DM_out, out_done);
-
-  // PRELAB: OUT, addr=5, ENDP=4, crc5=10
-  // assign test_pkt_crc5 = 19'b0100_0000101_11100001; 
-  // assign endp = 4'd4;
-  assign endp = 4'b1111; // Most we can do to stress bitstuffer
- 
-  // payload=0f21000000000000 crc16=a0e7
-  // assign data = 64'h0f21000000000000;
-  // payload=40aa11b7682df6d8 crc16=544a
-  // assign data = 64'h40aa11b7682df6d8;
-
-  // assign data = 64'h7f0811b7682df6d8; // ZERO, THEN SEVEN ONES -> GOOD
-  // assign data = 64'hfc0811b7682df6d8; // SIX ONES AT END -> FAIL
-  // assign data = 64'hfe0811b7682df6d8; // SEVEN ONES AT END -> FAIL
-
-  // assign data = 64'hfff1000000000000;
-
-  assign data = 64'hfef811b7682df6d8;
+  
+  // Inputs
+  logic        read_start, write_start;
+  logic [15:0] write_mempage, read_mempage;
+  logic [63:0] write_data;
+  // Outputs
+  logic DP_out, DM_out, sending,
+        read_success, write_success;
+  logic [63:0] read_data;
+  RW_FSM rw (.DP_in(wires.DP), .DM_in(wires.DM), .*);
+  // module RW_FSM
+  //   (input  logic clock, reset_n,
+  //   // Inputs from USBHost
+  //    input  logic        DP_in, DM_in, read_start, write_start,
+  //    input  logic [15:0] write_mempage, read_mempage,
+  //    input  logic [63:0] write_data,
+  //   // Outputs from USBHost
+  //    output logic DP_out, DM_out, sending, read_success, write_success,
+  //    output logic [63:0] read_data);
 
 
-
-  // // Assign DP, DM to the wire
-  assign wires.DP = DP_out;
-  assign wires.DM = DM_out;
-
+  assign wires.DP = (sending) ? DP_out : 1'bz; // A tristate driver
+  assign wires.DM = (sending) ? DM_out : 1'bz; // Another tristate driver
 
   task prelabRequest();
     // send_OUT <= 1; @(posedge clock); send_OUT <= 0; @(posedge clock);
     // send_IN <= 1; @(posedge clock); send_IN <= 0; @(posedge clock);
-    send_DATA0 <= 1; @(posedge clock); send_DATA0 <= 0; @(posedge clock);
+    // send_DATA0 <= 1; @(posedge clock); send_DATA0 <= 0; @(posedge clock);
     // send_ACK <= 1; @(posedge clock); send_ACK <= 0; @(posedge clock);
     // send_NAK <= 1; @(posedge clock); send_NAK <= 0; @(posedge clock);
 
@@ -68,8 +54,18 @@ module USBHost (
       output logic [63:0] data, // Vector of bytes to read
       output logic success);
 
-      data = 64'h0;
-      success = 1'b0;
+      data = read_data;
+      success = read_success;
+
+      read_start <= 1;
+      read_mempage <= mempage;
+      @ (posedge clock);
+
+      read_start <= 0;
+      @ (posedge clock);
+
+      repeat (1000);
+      @ (posedge clock);
 
   endtask : readData
 
@@ -81,7 +77,18 @@ module USBHost (
       input logic [63:0] data, // Vector of bytes to write
       output logic success);
 
-      success = 1'b0;
+      success = write_success;
+
+      write_start <= 1;
+      write_mempage <= mempage;
+      write_data <= data;
+      @ (posedge clock);
+
+      write_start <= 0;
+      @ (posedge clock);
+
+      repeat (1000);
+      @ (posedge clock);
 
   endtask : writeData
 
