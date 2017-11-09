@@ -132,7 +132,7 @@ endmodule : DPDM_decode_FSM
 // 	output logic dpdm_sending, clr_cnt, ACK_rec, NAK_rec, DATA0_rec
 module DPDM_decode(
 	input logic clock, reset_n,
-	input logic DP_in, DM_in,
+	input logic DP_in, DM_in, host_sending,
 	output logic out_bit, dpdm_sending, rec_start, load_data,
     output logic ACK_rec, NAK_rec, DATA0_rec);
 
@@ -149,7 +149,7 @@ module DPDM_decode(
 									.Q(match_val),  .*);
 
     always_comb begin
-        if(DP_in === 1'bz && DM_in === 1'bz) begin
+        if ((host_sending) || (DP_in === 1'bz && DM_in === 1'bz)) begin
             fsm_start = 0;
         end else begin
             fsm_start = 1;
