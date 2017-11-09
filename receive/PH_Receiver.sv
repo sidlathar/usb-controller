@@ -42,7 +42,7 @@ module PH_Receiver_fsm(
 			end
 
 			DATA_RECEIVE: begin
-				if(crc_valid == 1'bz) begin
+				if(crc_valid === 1'bz) begin
 					nextState = DATA_RECEIVE;
 				end
 				else if(crc_valid == 1'b1)begin
@@ -68,10 +68,13 @@ module PH_Receiver
 	 input logic crc_valid, ACK_rec, NAK_rec, DATA0_rec,
 	 input logic [63:0] data0,
 	output logic rec_ACK, rec_NAK, rec_DATA0,
-	output logic [63:0] data, data_valid);
+	output logic [63:0] data_rec, data_valid);
 
 
-	assign data = (data_valid)? data0: 64'bZ;
+	 PH_Receiver_fsm fsm(.*);
+
+	 assign data_rec = data0;
+	 assign data_valid = crc_valid;
 
 
 

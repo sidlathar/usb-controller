@@ -25,7 +25,7 @@ module testReceiver;
 // 	input logic DP_in, DM_in, rec_start,
 // 	output logic out_bit, dpdm_sending);
 	logic clock, reset_n, DP_in, DM_in, rec_start;
-	logic out_bit, dpdm_sending;
+	logic out_bit, dpdm_sending, load_data;
 
 	DPDM_decode dpdm(.*);
 
@@ -50,7 +50,8 @@ module testReceiver;
 	BitStuffer_decode bsd(.in_bit(nrzi_out_bit), .out_bit(bs_out_bit), .*);
 
 
-	logic crc_sending, crc_out_bit;
+	logic crc_sending, crc_out_bit, crc_valid;
+	logic [63:0] data0;
 
 	CRC16_Decode crc16d(.in_bit(bs_out_bit), .out_bit(crc_out_bit), .*);
 
@@ -90,8 +91,8 @@ module testReceiver;
 
 
 	  initial begin
-	    $monitor ($stime,, "dpdm_sending: %b | nrzi_sending: %b | bs_sending: %b | crc_sending: %b |  se0_rec: %b | match_val = %b | cs: %s | ns: %s | pkt_received: %h | crc residue: %h",
-	                        dpdm.fsm.dpdm_sending, nrzi_sending, bs_sending, crc_sending,  dpdm.se0_rec, dpdm.match_val, dpdm.fsm.currState.name, dpdm.fsm.nextState.name, pkt_received, crc16d.capture_residue);
+	    $monitor ($stime,, " dpdm_sending: %b | nrzi_sending: %b | bs_sending: %b | crc_sending: %b |  se0_rec: %b | match_val = %b | cs: %s | ns: %s | pkt_received: %h | crc residue: %h, validCRC: %b | data0: %h",
+	                        dpdm.fsm.dpdm_sending, nrzi_sending, bs_sending, crc_sending,  dpdm.se0_rec, dpdm.match_val, dpdm.fsm.currState.name, dpdm.fsm.nextState.name, pkt_received, crc16d.capture_residue, crc_valid, data0);
 	    clock = 0;
 	    reset_n = 0;
 	    reset_n <= #1 1;
@@ -99,17 +100,22 @@ module testReceiver;
 	  end
 
 	  initial begin
-	    rec_start = 0;
+	    //rec_start = 0;
 	    @(posedge clock);
-	    rec_start = 1;
+	    //rec_start = 1;
 	    @(posedge clock);
-	    rec_start = 0;
+	    //rec_start = 0;
 
 	    for (int i = 0; i < 100; i ++) begin
 	      DP_in <= DP[i];
 	      DM_in <= DM[i];
 	      @(posedge clock);
 	    end
+
+
+	     DP_in <= 1'bz;
+	     DM_in <= 1'bz;
+	     @(posedge clock);
 
 	    @(posedge clock);
 	    repeat(10)
