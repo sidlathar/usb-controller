@@ -52,7 +52,7 @@ module PH_Sender
                        send_OUT, send_IN, send_DATA0, send_ACK, send_NAK,
    input  logic  [3:0] endp,  // If we need it for OUT or IN
    input  logic [63:0] data,  // If we need it for DATA0
-   output logic        DP_out, DM_out, out_done);
+   output logic        DP_out, DM_out, sent);
 
   // HARD-CODED PIDS
   logic [7:0] out_pid, in_pid, data0_pid, ack_pid, nak_pid;
@@ -177,10 +177,10 @@ module PH_Sender
   DPDM_Encode dpdm (
              .nrzi_in_bit(nrzi_out_bit), .nrzi_sending(nrzi_sending),
              .ph_in_bit(ph_out_bit), .ph_sending(ph_sending),
-             .DP(DP_out), .DM(DM_out), .out_done(out_done), .*);
+             .DP(DP_out), .DM(DM_out), .sent(sent), .*);
   // (input  logic clock, reset_n,
   //               nrzi_in_bit, nrzi_sending,
   //               ph_in_bit, ph_sending,
-  //  output logic DP, DM, out_done);
+  //  output logic DP, DM, sent);
 
 endmodule : PH_Sender
