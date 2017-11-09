@@ -3,11 +3,11 @@
 module RW_FSM
   (input  logic clock, reset_n,
   // Inputs from USBHost
-   input  logic        read_start, write_start,
+   input  logic        DP_in, DM_in, read_start, write_start,
    input  logic [15:0] write_mempage, read_mempage,
-   input  logic [63:0] write_data
-  // Outputs from USBHost
-   output logic read_success, write_success,
+   input  logic [63:0] write_data,
+  // Outputs to USBHost
+   output logic DP_out, DM_out, sending, read_success, write_success,
    output logic [63:0] read_data);
 
   /*************************** DATAPATH COMPONENTS  ***************************/
@@ -35,7 +35,7 @@ module RW_FSM
 
   // Instantiate PH_Sender module
   logic send_OUT, send_IN, send_DATA0, send_ACK, send_NAK; // Inputs
-  logic DP_out, DM_out, sent; // Outputs
+  logic sent; // Outputs
   PH_Sender sender (.endp(out_endp), .data(out_data), .*);
   //   (input  logic        clock, reset_n,
   //                        send_OUT, send_IN, send_DATA0, send_ACK, send_NAK,
@@ -48,22 +48,21 @@ module RW_FSM
   logic [63:0] data_rec;             // Outputs
   logic data_valid, rec_start;       // Outputs (all outputs, just listening)
   PH_Receiver rec (.*);
-  // (input logic clock, reset_n,
+  // (input logic clock, reset_n, sending, DP_in, DM_in,
   // output logic rec_ACK, rec_NAK, rec_DATA0,
   // output logic [63:0] data_rec, 
   // output logic data_valid, rec_start); //TO READ WRITE FSM
 
-
   // Instantiate OUT_Trans module
-  logic        out_trans_start; // Input into OUT_Trans
-  logic        out_trans_done, out_trans_success, out_trans_failure; // Outputs
-  OUT_Trans out (.start(out_trans_start),
+  logic out_trans_start,
+        out_sending, out_trans_done, out_trans_success, out_trans_failure;
+  OUT_Trans out (.start(out_trans_start), .sending(out_sending),
                  .done(out_trans_done), .success(out_trans_success),
-                 .failure(out_trans_failure) .*);
+                 .failure(out_trans_failure), .*);
   // (input  logic clock, reset_n,
   // // RW_FSM signals
   // input  logic        start,
-  // output logic        done, success, failure
+  // output logic        sending, done, success, failure
   // // PH_Sender signals
   // input  logic sent,
   // output logic send_OUT, send_DATA0,
@@ -71,15 +70,15 @@ module RW_FSM
   // input  logic rec_ACK, rec_NAK, rec_start);
 
   // Instantiate IN_Trans module
-  logic        in_trans_start; // Input into IN_Trans
-  logic        in_trans_done, in_trans_success, in_trans_failure; // Outputs
-  IN_Trans in (.start(in_trans_start),
+  logic in_trans_start,
+        in_sending, in_trans_done, in_trans_success, in_trans_failure;
+  IN_Trans in (.start(in_trans_start), .sending(in_sending),
                .done(in_trans_done), .success(in_trans_success),
                .failure(in_trans_failure), .*);
   // (input  logic clock, reset_n,
   // // RW_FSM signals
   // input  logic        start,
-  // output logic        done, success, failure
+  // output logic        sending, done, success, failure
   // // PH_Sender signals
   // input  logic sent,
   // output logic send_IN, send_ACK, send_NAK,
@@ -87,7 +86,9 @@ module RW_FSM
   // input  logic        rec_DATA0, data_valid, rec_start,
   // input  logic [63:0] data_rec);
 
-
+  
+  // SENDING SIGNAL (WHENEVER DP/DM IS BEING DRIVEN BY US, THE SENDER)
+  assign sending = (out_sending || in_sending);
 
 
   /*********************************** FSM ***********************************/
@@ -109,13 +110,13 @@ module RW_FSM
           out_endp_sel = 0; // endp = 4
           out_data_sel = 2'd0; // data = read_addr
 
-          nextState = READ_OUT_ADDR
+          nextState = READ_OUT_ADDR;
         end else if (write_start) begin
           out_trans_start = 1;
           out_endp_sel = 0; //endp = 4
           out_data_sel = 2'd1; // data = write_addr
 
-          nextState = WRITE_OUT_ADDR
+          nextState = WRITE_OUT_ADDR;
         end
       end
 
@@ -128,7 +129,7 @@ module RW_FSM
           // OUT transaction succeeded
           in_trans_start = 1;
 
-          nextState = READ_IN_DATA
+          nextState = READ_IN_DATA;
         end else if (out_trans_failure) begin
           // OUT transaction failed
           nextState = IDLE;
@@ -152,17 +153,19 @@ module RW_FSM
 
       /**************************** "WRITE" BEGIN ****************************/
       WRITE_OUT_ADDR : begin
+        if (~out_trans_done) begin
           // OUT transaction working
           nextState = WRITE_OUT_ADDR;
         end else if (out_trans_success) begin
           // OUT transaction succeeded
           out_endp_sel = 8; //endp = 1
-          out_data_sel = 2'd2 // data = write_data
+          out_data_sel = 2'd2; // data = write_data
 
           nextState = WRITE_OUT_DATA;
         end else if (out_trans_failure) begin
           // OUT transaction failed
           nextState = IDLE;
+        end
       end
 
       WRITE_OUT_DATA : begin
@@ -178,7 +181,7 @@ module RW_FSM
             // OUT transaction failed
             nextState = IDLE;
           end
-        end
+      end
 
     endcase // currState
 

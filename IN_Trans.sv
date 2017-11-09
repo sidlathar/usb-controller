@@ -4,7 +4,7 @@ module IN_Trans
   (input  logic clock, reset_n,
   // RW_FSM signals
   input  logic        start,
-  output logic        done, success, failure
+  output logic        sending, done, success, failure,
   // PH_Sender signals
   input  logic sent,
   output logic send_IN, send_ACK, send_NAK,
@@ -55,6 +55,7 @@ module IN_Trans
 
   // REGISTER TO HOLD DATA RECEIVED
   logic [63:0] data_reg_Q;
+  logic data_reg_clr, data_reg_ld;
   always_ff @(posedge clock, negedge reset_n) begin
       if (~reset_n) begin
         data_reg_Q <= 64'd0;
@@ -74,9 +75,9 @@ module IN_Trans
   always_comb begin
     {send_IN, send_ACK, send_NAK, clk_cnt_inc, clk_cnt_clr, to_cnt_inc,
      to_cnt_clr, invalid_cnt_inc, invalid_cnt_clr, data_reg_ld, data_reg_clr,
-     done, success, failure} = 14'b0;
+     sending, done, success, failure} = 15'b0;
 
-    case (currState) begin
+    case (currState)
       IDLE : begin
         if (~start) begin
           nextState = IDLE;
@@ -90,6 +91,7 @@ module IN_Trans
       WAIT_SEND_IN : begin
         if (~sent) begin
           // Wait for PH_Sender to finish sending
+          sending = 1;
           nextState = WAIT_SEND_IN;
         end else begin
           // Now we wait for a response
@@ -118,7 +120,7 @@ module IN_Trans
         end else if (clk_cnt == 32'd255) begin
           // Timed out, send a NAK and wait again
           send_NAK = 1;
-          to_cnt_inc;
+          to_cnt_inc = 1;
 
           nextState = WAIT_SEND_NAK;
         end else if (rec_DATA0 && ~data_valid) begin

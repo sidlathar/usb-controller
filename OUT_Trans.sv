@@ -4,7 +4,7 @@ module OUT_Trans
   (input  logic clock, reset_n,
   // RW_FSM signals
   input  logic        start,
-  output logic        done, success, failure
+  output logic        sending, done, success, failure,
   // PH_Sender signals
   input  logic sent,
   output logic send_OUT, send_DATA0,
@@ -60,9 +60,9 @@ module OUT_Trans
   // NS and output logic
   always_comb begin
     {send_OUT, send_DATA0, clk_cnt_inc, clk_cnt_clr, to_cnt_inc, to_cnt_clr,
-     nak_cnt_inc, nak_cnt_clr, done, success, failure} = 11'b0;
+     nak_cnt_inc, nak_cnt_clr, sending, done, success, failure} = 12'b0;
 
-    case (currState) begin
+    case (currState)
       IDLE : begin
         if (~start) begin
           nextState = IDLE;
@@ -76,6 +76,8 @@ module OUT_Trans
       WAIT_SEND_OUT : begin
         if (~sent) begin
           // Wait for PH_Sender to finish sending
+          sending = 1;
+
           nextState = WAIT_SEND_OUT;
         end else begin
           // Now we can send DATA0
@@ -90,6 +92,8 @@ module OUT_Trans
       WAIT_SEND_DATA0 : begin
         if (~sent) begin
           // Wait for PH_Sender to finish sending
+          sending = 1;
+
           nextState = WAIT_SEND_DATA0;
         end else begin
           // Now we start counting for timeout
