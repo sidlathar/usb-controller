@@ -111,6 +111,7 @@ module CRC16_Encode_FSM
           out_sel = 1;
           crc_flush_cnt_inc = 1;
           pkt_bit_count_clr = 1;
+          crc_clr = 1;
 
           crc_valid_out = 1; // FIX FROM OUR PAST
 
