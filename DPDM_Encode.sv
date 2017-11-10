@@ -3,11 +3,13 @@
 // A special counter that will wrap-around at M
 module modCounter
   #(M = 5)
-   (input  logic clock, inc, reset_n,
+   (input  logic clock, inc, reset_n, clear,
     output logic [3:0] Q);
 
   always_ff @(posedge clock, negedge reset_n)
     if (~reset_n)
+      Q <= 0;
+    else if (clear)
       Q <= 0;
     else if (inc & (Q == M-1))
       Q <= 0;
@@ -20,7 +22,7 @@ endmodule: modCounter
 module FIFO  (
   input logic              clock, reset_n,
   input logic  data_in,
-  input logic              we, re,
+  input logic              we, re, clear,
   output logic data_out,
   output logic             full, empty);
 
@@ -49,6 +51,9 @@ module FIFO  (
     if (~reset_n) begin
       size <= 4'd8;
       Q <= 8'b0010_1010; // Hard-coded SYNC
+    end else if (clear) begin // NEED TO ADD A CLEAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      size <= 4'd8;
+      Q <= 8'b0010_1010; // Hard-coded SYNC
     end else begin
       if (re & we) begin
         // Read AND write, no need to update size
@@ -70,14 +75,14 @@ module DPDM_Encode_FSM
   (input  logic        clock, reset_n,
                        incoming_valid,
    input  logic [31:0] flush_count,
-   output logic        re, we, cnt_inc, cnt_clr, sent,
+   output logic        re, we, clear, cnt_inc, cnt_clr, sent,
    output logic  [1:0] eop_index, out_sel); // 0, 1, or 2
 
   enum logic [2:0] {IDLE, PACKET, FLUSH,
                     EOP_0, EOP_1, EOP_2, DONE} currState, nextState;
  
   always_comb begin
-    {re, we, cnt_inc, cnt_clr, eop_index, out_sel, sent} = 9'b0_0000_0000;
+    {re, we, clear, cnt_inc, cnt_clr, eop_index, out_sel, sent} = 10'd0;
 
     case (currState)
       IDLE: begin
@@ -148,7 +153,8 @@ module DPDM_Encode_FSM
 
       DONE : begin
         // The only purpose of this state to send sent at right time
-        sent = 1; 
+        sent = 1;
+        clear = 1; // NEED TO RESET BUFFER BACK TO HOLD SYNC
 
         nextState = IDLE;
       end
@@ -194,7 +200,7 @@ module DPDM_Encode
   // assign incoming_valid = ph_sending;
 
   // BUFFER TO HOLD INCOMING BITS WHILE WE SEND SYNC
-  logic data_out, we, re;
+  logic data_out, we, re, clear;
   logic full, empty; // NOT USED
   FIFO buff (.data_in(in_bit), .*);
   //  input logic              clock, reset_n,
