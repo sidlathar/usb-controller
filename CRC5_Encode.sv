@@ -7,7 +7,8 @@ module CRC5_Encode_FSM
    input  logic [31:0] pkt_bit_count, crc_bit_count, crc_flush_cnt,
    output logic  [2:0] crc_bit_sel,
    output logic        send_it, out_sel, crc_do, crc_clr,
-                       crc_valid_out, crc_flush_cnt_inc, crc_flush_cnt_clr);
+                       crc_valid_out, crc_flush_cnt_inc, crc_flush_cnt_clr,
+                       pkt_bit_count_clr);
 
   enum logic [4:0] {IDLE, WAIT_LOAD, IGNORE_PID, CALC_CRC, FLUSH_CRC,
                     PAUSE_CALC_CRC, PAUSE_EDGE,
@@ -21,7 +22,8 @@ module CRC5_Encode_FSM
 
   always_comb begin
     {crc_valid_out, crc_bit_sel, send_it, out_sel, crc_do, crc_clr,
-      crc_flush_cnt_inc, crc_flush_cnt_clr} = 10'b1_000_000000;
+      crc_flush_cnt_inc, crc_flush_cnt_clr,
+      pkt_bit_count_clr} = 11'b1_000_0000000;
 
     case (currState)
 
@@ -105,6 +107,7 @@ module CRC5_Encode_FSM
           crc_bit_sel = crc_flush_cnt;
           out_sel = 1;
           crc_flush_cnt_inc = 1;
+          pkt_bit_count_clr = 1;
 
           crc_valid_out = 1; // FIX FROM OUR PAST MISTAKES...
 
@@ -116,6 +119,7 @@ module CRC5_Encode_FSM
         crc_bit_sel = crc_flush_cnt;
         out_sel = 1;
         crc_flush_cnt_inc = 1;
+        pkt_bit_count_clr = 1;
 
         nextState = FLUSH_CRC;
       end
@@ -152,8 +156,11 @@ module CRC5_Encode
 
   // Counter for how many packet bits we've sent
   logic [31:0] pkt_bit_count;
+  logic pkt_bit_count_clr; // NEED TO ADD CLEARS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   always_ff @(posedge clock, negedge reset_n) begin
     if (~reset_n)
+      pkt_bit_count <= 0;
+    else if (pkt_bit_count_clr)
       pkt_bit_count <= 0;
     else if (send_it)
       pkt_bit_count <= pkt_bit_count + 1;
