@@ -18,10 +18,10 @@ module RW_FSM
 
   // Mux which endp to send to PH_Sender
   logic [3:0] out_endp;
-  logic out_endp_sel; // 0 -> 4'd4, 1 -> 4'd8
+  logic endp_sel; // 0 -> 4'd4, 1 -> 4'd8
   always_comb begin
     out_endp = 4'dx; // Default to X's
-    if (out_endp_sel)
+    if (endp_sel)
       out_endp = 4'd8;
     else
       out_endp = 4'd4;
@@ -108,7 +108,7 @@ module RW_FSM
   // Output and NS logic
   always_comb begin
     {read_success, write_success, out_trans_start, in_trans_start,
-     out_endp_sel, out_data_sel, finished} = 7'b0;
+     endp_sel, out_data_sel, finished} = 7'b0;
 
      nextState = currState;
 
@@ -118,13 +118,13 @@ module RW_FSM
           nextState = IDLE;
         end else if (read_start) begin
           out_trans_start = 1;
-          out_endp_sel = 0; // endp = 4
+          endp_sel = 0; // endp = 4
           out_data_sel = 2'd0; // data = read_addr
 
           nextState = READ_OUT_ADDR;
         end else if (write_start) begin
           out_trans_start = 1;
-          out_endp_sel = 0; //endp = 4
+          endp_sel = 0; //endp = 4
           out_data_sel = 2'd1; // data = write_addr
 
           nextState = WRITE_OUT_ADDR;
@@ -139,6 +139,7 @@ module RW_FSM
         end else if (out_trans_success) begin
           // OUT transaction succeeded
           in_trans_start = 1;
+          endp_sel = 1;
 
           nextState = READ_IN_DATA;
         end else if (out_trans_failure) begin
@@ -175,7 +176,7 @@ module RW_FSM
         end else if (out_trans_success) begin
           // OUT transaction succeeded
           out_trans_start = 1;
-          out_endp_sel = 1; //endp = 8
+          endp_sel = 1; //endp = 8
           out_data_sel = 2'd2; // data = write_data
 
           nextState = WRITE_OUT_DATA;
