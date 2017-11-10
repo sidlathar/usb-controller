@@ -103,7 +103,7 @@ module BS_Encode_FSM
 
           nextState = COUNT_ONES;
         end else if (~crc_valid_out) begin
-          // bs_sending = 1;
+          bs_sending = 1;
 
           nextState = IDLE;
         end
