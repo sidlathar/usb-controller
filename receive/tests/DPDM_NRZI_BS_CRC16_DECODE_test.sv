@@ -25,7 +25,8 @@ module testReceiver;
 // 	input logic DP_in, DM_in, rec_start,
 // 	output logic out_bit, dpdm_sending);
 	logic clock, reset_n, DP_in, DM_in, rec_start;
-	logic out_bit, dpdm_sending, load_data;
+	logic out_bit, dpdm_sending, load_data, host_sending;
+	logic ACK_rec, NAK_rec, DATA0_rec;
 
 	DPDM_decode dpdm(.*);
 
@@ -73,10 +74,18 @@ module testReceiver;
   	// assign DM = {3'b000 , ~('b1001011011111000001111111000000101010010111000111100011010100111000000111000111010001010000101010)};
 
 
-  	logic [99:0] DP, DM;
-  	assign DP = 100'b1001001011011111000001111111000000101010010111000111100011010100111000000111000111010001010000101010;  //CRC//DATA0//PID//SYNC  WORKS!  WORKS!
-  	assign DM = {3'b000 , ~('b1001011011111000001111111000000101010010111000111100011010100111000000111000111010001010000101010)};
+  	// logic [99:0] DP, DM;
+  	// assign DP = 100'b1001001011011111000001111111000000101010010111000111100011010100111000000111000111010001010000101010;  //CRC//DATA0//PID//SYNC  WORKS!  WORKS!
+  	// assign DM = {3'b000 , ~('b1001011011111000001111111000000101010010111000111100011010100111000000111000111010001010000101010)};
 
+	logic [18:0] DP, DM;
+	        //jXX_0001_1011_0010_1010
+	// assign DP = 19'b100_0001_1011_0010_1010;  //ACK
+	// assign DM = 19'b000_1110_0100_1101_0101;  //ACK
+
+	        //JXX_0110_0011_0010_1010
+	assign DP = 19'b100_0110_0011_0010_1010;  //NAK
+	assign DM = 19'b000_1001_1100_1101_0101;  //NAk
 
 
 
@@ -91,8 +100,8 @@ module testReceiver;
 
 
 	  initial begin
-	    $monitor ($stime,, " dpdm_sending: %b | nrzi_sending: %b | bs_sending: %b | crc_sending: %b |  se0_rec: %b | match_val = %b | cs: %s | ns: %s | pkt_received: %h | crc residue: %h, validCRC: %b | data0: %h",
-	                        dpdm.fsm.dpdm_sending, nrzi_sending, bs_sending, crc_sending,  dpdm.se0_rec, dpdm.match_val, dpdm.fsm.currState.name, dpdm.fsm.nextState.name, pkt_received, crc16d.capture_residue, crc_valid, data0);
+	    $monitor ($stime,, " dpdm_sending: %b | nrzi_sending: %b | bs_sending: %b | crc_sending: %b |  se0_rec: %b | match_val = %b | cs: %s | ns: %s | pkt_received: %h | crc residue: %h, validCRC: %b | data0: %h, ack %b, nak %b. data0 %b",
+	                        dpdm.fsm.dpdm_sending, nrzi_sending, bs_sending, crc_sending,  dpdm.se0_rec, dpdm.match_val, dpdm.fsm.currState.name, dpdm.fsm.nextState.name, pkt_received, crc16d.capture_residue, crc_valid, data0, ACK_rec, NAK_rec, DATA0_rec);
 	    clock = 0;
 	    reset_n = 0;
 	    reset_n <= #1 1;
@@ -100,13 +109,14 @@ module testReceiver;
 	  end
 
 	  initial begin
+	  	host_sending <= 0;
 	    //rec_start = 0;
 	    @(posedge clock);
 	    //rec_start = 1;
 	    @(posedge clock);
 	    //rec_start = 0;
 
-	    for (int i = 0; i < 100; i ++) begin
+	    for (int i = 0; i < 20; i ++) begin
 	      DP_in <= DP[i];
 	      DM_in <= DM[i];
 	      @(posedge clock);
