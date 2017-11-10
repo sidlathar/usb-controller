@@ -7,7 +7,7 @@ module RW_FSM
    input  logic [15:0] write_mempage, read_mempage,
    input  logic [63:0] write_data,
   // Outputs to USBHost
-   output logic DP_out, DM_out, sending, read_success, write_success,
+   output logic DP_out, DM_out, sending, finished, read_success, write_success,
    output logic [63:0] read_data);
 
   /*************************** DATAPATH COMPONENTS  ***************************/
@@ -42,7 +42,7 @@ module RW_FSM
   // Instantiate PH_Sender module
   logic send_OUT, send_IN, send_DATA0, send_ACK, send_NAK; // Inputs
   logic sent; // Outputs
-  PH_Sender sender (.endp(out_endp), .data(out_data), .*);
+  PH_Sender sender (.endp(out_endp), .data(out_data), .send_OUT(send_OUT), .*);
   //   (input  logic        clock, reset_n,
   //                        send_OUT, send_IN, send_DATA0, send_ACK, send_NAK,
   //    input  logic  [3:0] endp,  // If we need it for OUT or IN
@@ -53,8 +53,8 @@ module RW_FSM
   logic rec_ACK, rec_NAK, rec_DATA0; // Outputs
   logic [63:0] data_rec;             // Outputs
   logic data_valid, rec_start;       // Outputs (all outputs, just listening)
-  PH_Receiver rec (.*);
-  // (input logic clock, reset_n, sending, DP_in, DM_in,
+  PH_Receiver rec (.host_sending(sending), .data_rec(read_data), .*);
+  // (input logic clock, reset_n, host_sending, DP_in, DM_in,
   // output logic rec_ACK, rec_NAK, rec_DATA0,
   // output logic [63:0] data_rec, 
   // output logic data_valid, rec_start); //TO READ WRITE FSM
@@ -64,7 +64,9 @@ module RW_FSM
         out_sending, out_trans_done, out_trans_success, out_trans_failure;
   OUT_Trans out (.start(out_trans_start), .sending(out_sending),
                  .done(out_trans_done), .success(out_trans_success),
-                 .failure(out_trans_failure), .*);
+                 .failure(out_trans_failure),
+                 .send_OUT(send_OUT),
+                 .send_DATA0(send_DATA0), .*);
   // (input  logic clock, reset_n,
   // // RW_FSM signals
   // input  logic        start,
@@ -106,8 +108,8 @@ module RW_FSM
   // Output and NS logic
   always_comb begin
     {read_success, write_success, out_trans_start, in_trans_start,
-     out_endp_sel, out_data_sel} = 6'b0;
-     
+     out_endp_sel, out_data_sel, finished} = 7'b0;
+
      nextState = currState;
 
     case (currState)
@@ -141,6 +143,8 @@ module RW_FSM
           nextState = READ_IN_DATA;
         end else if (out_trans_failure) begin
           // OUT transaction failed
+          finished = 1;
+
           nextState = IDLE;
         end
       end
@@ -151,11 +155,14 @@ module RW_FSM
           nextState = READ_IN_DATA;
         end else if (in_trans_success) begin
           // IN transaction succeeded
+          finished = 1;
           read_success = 1;
 
           nextState = IDLE;
         end else if (in_trans_failure) begin
           // IN transaction failed
+          finished = 1;
+
           nextState = IDLE;
         end
       end
@@ -167,27 +174,33 @@ module RW_FSM
           nextState = WRITE_OUT_ADDR;
         end else if (out_trans_success) begin
           // OUT transaction succeeded
+          out_trans_start = 1;
           out_endp_sel = 1; //endp = 8
           out_data_sel = 2'd2; // data = write_data
 
           nextState = WRITE_OUT_DATA;
         end else if (out_trans_failure) begin
           // OUT transaction failed
+          finished = 1;
+
           nextState = IDLE;
         end
       end
 
       WRITE_OUT_DATA : begin
-          if (~in_trans_done) begin
+          if (~out_trans_done) begin
             // OUT transaction working
             nextState = WRITE_OUT_DATA;
-          end else if (in_trans_success) begin
+          end else if (out_trans_success) begin
             // OUT transaction succeeded
             write_success = 1;
+            finished = 1;
 
             nextState = IDLE;
-          end else if (in_trans_failure) begin
+          end else if (out_trans_failure) begin
             // OUT transaction failed
+            finished = 1;
+
             nextState = IDLE;
           end
       end
