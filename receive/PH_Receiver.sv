@@ -1,7 +1,7 @@
 `default_nettype none
 
 module PH_Receiver_fsm(
-	input logic crc_sending, crc_valid, rec_start, ACK_rec, 
+	input logic clock, reset_n, crc_sending, crc_valid, fsm_start, ACK_rec, 
 				NAK_rec,
 	output logic rec_ACK, rec_NAK, rec_DATA0, data_valid);
 
@@ -12,7 +12,7 @@ module PH_Receiver_fsm(
 		{rec_ACK, rec_NAK, rec_DATA0, data_valid} = 4'b0000;
 		unique case (currState)
 			IDLE: begin
-				if(~rec_start) begin
+				if(~fsm_start) begin
 					nextState = IDLE;
 				end
 				else begin
@@ -60,6 +60,15 @@ module PH_Receiver_fsm(
 			end
 		endcase
 	end
+
+	always_ff @(posedge clock, negedge reset_n) begin
+		if (~reset_n) begin
+			currState <= IDLE;
+		end else begin
+			currState <= nextState;
+		end
+	end
+	
 endmodule: PH_Receiver_fsm
 
 
@@ -68,6 +77,16 @@ module PH_Receiver
 	output logic rec_ACK, rec_NAK, rec_DATA0,
 	output logic [63:0] data_rec, 
 	output logic data_valid, rec_start); //TO READ WRITE FSM
+
+	logic fsm_start;
+	always_comb begin
+	    if ((host_sending) || (DP_in === 1'bz && DM_in === 1'bz)) begin
+	        fsm_start = 0;
+	    end else begin
+	        fsm_start = 1;
+	    end
+	
+	end
 
 
 	// input logic clock, reset_n,
