@@ -16,9 +16,10 @@ module USBHost (
   logic [63:0] write_data;
   // Outputs
   logic DP_out, DM_out, sending,
-        read_success, write_success;
+        read_success, write_success, finished,
+        DP_in, DM_in;
   logic [63:0] read_data;
-  RW_FSM rw (.DP_in(wires.DP), .DM_in(wires.DM), .*);
+  RW_FSM rw (.DP_in(DP_in), .DM_in(DM_in), .*);
   // module RW_FSM
   //   (input  logic clock, reset_n,
   //   // Inputs from USBHost
@@ -26,23 +27,29 @@ module USBHost (
   //    input  logic [15:0] write_mempage, read_mempage,
   //    input  logic [63:0] write_data,
   //   // Outputs from USBHost
-  //    output logic DP_out, DM_out, sending, read_success, write_success,
+  //    output logic DP_out, DM_out, sending, read_success, write_success, finished,
   //    output logic [63:0] read_data);
 
 
   assign wires.DP = (sending) ? DP_out : 1'bz; // A tristate driver
   assign wires.DM = (sending) ? DM_out : 1'bz; // Another tristate driver
 
+  assign DP_in = (sending) ? 1'bz : wires.DP; // A tristate driver
+  assign DM_in = (sending) ? 1'bz : wires.DM; // Another tristate driver
+
   task prelabRequest();
     // send_OUT <= 1; @(posedge clock); send_OUT <= 0; @(posedge clock);
-    // send_IN <= 1; @(posedge clock); send_IN <= 0; @(posedge clock);
+    // send_IN <= 1; @(poswwedge clock); send_IN <= 0; @(posedge clock);
     // send_DATA0 <= 1; @(posedge clock); send_DATA0 <= 0; @(posedge clock);
     // send_ACK <= 1; @(posedge clock); send_ACK <= 0; @(posedge clock);
     // send_NAK <= 1; @(posedge clock); send_NAK <= 0; @(posedge clock);
 
+    read_start <= 1;
+    @ (posedge clock);
+    read_start <= 0;
+
     repeat(100)
     @(posedge clock);
-
 
   endtask : prelabRequest
 
@@ -77,17 +84,28 @@ module USBHost (
       input logic [63:0] data, // Vector of bytes to write
       output logic success);
 
-      success = write_success;
-
-      write_start <= 1;
       write_mempage <= mempage;
       write_data <= data;
-      @ (posedge clock);
+
+      write_start <= 1;
+
+      wait (finished);
 
       write_start <= 0;
-      @ (posedge clock);
+      // @(posedge clock);
+      // success <= write_success;
+      if (write_success == 1'b1) begin
+        repeat (100) begin
+          @ (posedge clock);
+        end
+        success <= 1;
+      end else begin
+        repeat (100) begin
+          @ (posedge clock);
+        end
+        success <= 0;
+      end
 
-      repeat (1000);
       @ (posedge clock);
 
   endtask : writeData
