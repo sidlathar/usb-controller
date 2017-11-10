@@ -115,13 +115,28 @@ module OUT_Trans
           done = 1;
           failure = 1;
 
-          nextState = IDLE;
+          // nextState = IDLE;
+          if (~start) begin
+            nextState = IDLE;
+          end else begin
+            send_OUT = 1;
+
+            nextState = WAIT_SEND_OUT;
+          end
         end else if (rec_ACK) begin
           // Transaction succeeded
           done = 1;
           success = 1;
 
-          nextState = IDLE;
+          // nextState = IDLE;
+          // EDGE CASE NEED TO SKIP IDLE
+          if (~start) begin
+            nextState = IDLE;
+          end else begin
+            send_OUT = 1;
+
+            nextState = WAIT_SEND_OUT;
+          end
         end else if (rec_NAK) begin
           // NAK received, try sending DATA0 again
           send_DATA0 = 1;
