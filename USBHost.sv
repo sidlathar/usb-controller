@@ -64,18 +64,21 @@ module USBHost (
       output logic [63:0] data, // Vector of bytes to read
       output logic success);
 
+
+      read_mempage <= mempage;
+      read_start <= 1;
+      @ (posedge clock);
+      write_start <= 0;
+      @ (posedge clock);
+
+
+      while (~finished) begin
+        @ (posedge clock);
+      end
       data = read_data;
       success = read_success;
-
-      read_start <= 1;
-      read_mempage <= mempage;
       @ (posedge clock);
 
-      read_start <= 0;
-      @ (posedge clock);
-
-      repeat (1000);
-      @ (posedge clock);
 
   endtask : readData
 
@@ -87,29 +90,46 @@ module USBHost (
       input logic [63:0] data, // Vector of bytes to write
       output logic success);
 
+      
       write_mempage <= mempage;
       write_data <= data;
 
       write_start <= 1;
-
-      wait (finished);
-
+      @ (posedge clock);
       write_start <= 0;
-      // @(posedge clock);
-      // success <= write_success;
-      if (write_success == 1'b1) begin
-        repeat (100) begin
-          @ (posedge clock);
-        end
-        success <= 1;
-      end else begin
-        repeat (100) begin
-          @ (posedge clock);
-        end
-        success <= 0;
+      @ (posedge clock);
+
+
+      while (~finished) begin
+        @ (posedge clock);
       end
 
+      success = write_success;
       @ (posedge clock);
+
+      // wait (finished);
+      // success <= write_success;
+      // @ (posedge clock);
+
+      // Debug let run for along time
+      // repeat(1000);
+      // @ (posedge clock);
+      // success <= write_success;
+      // @ (posedge clock);
+
+      // @(posedge clock);
+      // if (write_success == 1'b1) begin
+      //   repeat (100) begin
+      //     @ (posedge clock);
+      //   end
+      //   success <= 1;
+      // end else begin
+      //   repeat (100) begin
+      //     @ (posedge clock);
+      //   end
+      //   success <= 0;
+      // end
+
 
   endtask : writeData
 
