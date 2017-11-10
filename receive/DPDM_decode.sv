@@ -16,9 +16,12 @@ module DPDM_decode_FSM(
 	assign NAK_PID = 3'b010;
 	assign DATA0_PID = 3'b100;
 
+    logic [2:0] pkt_pid;
+
 	always_comb begin
     {dpdm_sending, ACK_rec, NAK_rec, DATA0_rec, rec_start,
      load_data} = 6'b0000_00;
+     // pkt_pid = pkt_pid;
 
     unique case (currState)
     	DEAD: begin
@@ -49,19 +52,19 @@ module DPDM_decode_FSM(
     			nextState = WAITPID;
     		end
     		else if ((PID_rec == ACK_PID)) begin 
-    			ACK_rec = 1;
-
+    			//ACK_rec = 1;
+                pkt_pid = ACK_PID;
     			nextState = ACK_R;
     		end
     		else if ((PID_rec == NAK_PID)) begin 
-    			NAK_rec = 1;
-
+    			//NAK_rec = 1;
+                pkt_pid = NAK_PID;
     			nextState = NAK_R;
     		end
     		else if ((PID_rec == DATA0_PID)) begin 
-    			DATA0_rec = 1;
+    			//DATA0_rec = 1;
     			dpdm_sending = 1;
-
+                pkt_pid = DATA0_PID;
     			nextState = DATA0_R;
     		end
     	end
@@ -107,7 +110,11 @@ module DPDM_decode_FSM(
     	end
 
     	EOP2: begin
-
+            case(pkt_pid) 
+                3'b001: ACK_rec = 1;
+                3'b010: NAK_rec = 1;
+                3'b100: DATA0_rec = 1;
+            endcase
     		nextState  = DEAD;
     	end
 
