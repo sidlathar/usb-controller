@@ -43,12 +43,15 @@ module USBHost (
     // send_DATA0 <= 1; @(posedge clock); send_DATA0 <= 0; @(posedge clock);
     // send_ACK <= 1; @(posedge clock); send_ACK <= 0; @(posedge clock);
     // send_NAK <= 1; @(posedge clock); send_NAK <= 0; @(posedge clock);
+    write_mempage <= 16'd0;
+    write_data <= 64'd0;
 
-    read_start <= 1;
+    write_start <= 1;
     @ (posedge clock);
-    read_start <= 0;
 
-    repeat(100)
+    wait (finished);
+
+    write_start <= 0;
     @(posedge clock);
 
   endtask : prelabRequest
