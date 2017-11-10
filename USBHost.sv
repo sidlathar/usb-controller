@@ -72,13 +72,11 @@ module USBHost (
       @ (posedge clock);
 
 
-      while (~finished) begin
-        @ (posedge clock);
-      end
-      data = read_data;
-      success = read_success;
+      @(posedge finished);
+      #1 wait(finished);
+      success <= read_success;
+      data <= read_data;
       @ (posedge clock);
-
 
   endtask : readData
 
@@ -100,35 +98,17 @@ module USBHost (
       @ (posedge clock);
 
 
-      while (~finished) begin
-        @ (posedge clock);
-      end
 
-      success = write_success;
+      @(posedge finished);
+      #1 wait(finished);
+      success <= write_success;
       @ (posedge clock);
 
-      // wait (finished);
-      // success <= write_success;
-      // @ (posedge clock);
-
-      // Debug let run for along time
-      // repeat(1000);
-      // @ (posedge clock);
-      // success <= write_success;
-      // @ (posedge clock);
-
-      // @(posedge clock);
-      // if (write_success == 1'b1) begin
-      //   repeat (100) begin
-      //     @ (posedge clock);
-      //   end
-      //   success <= 1;
-      // end else begin
-      //   repeat (100) begin
-      //     @ (posedge clock);
-      //   end
-      //   success <= 0;
+      // while (~finished) begin
+      //   @ (posedge clock);
       // end
+      // success = write_success;
+      // @ (posedge clock);
 
 
   endtask : writeData
