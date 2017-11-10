@@ -6,7 +6,7 @@ module DPDM_decode_FSM(
 	input logic [2:0] PID_rec,
 	output logic dpdm_sending, ACK_rec, NAK_rec, DATA0_rec, rec_start, load_data);
 
-	enum logic [4:0] {DEAD, WAITSYNC, WAITPID, ACK_R, NAK_R, 
+	enum logic [4:0] {DEAD, WAITSYNC, WAITPID, 
 						DATA0_R, EOP0, EOP1, EOP2} currState, nextState;
 
 
@@ -54,12 +54,12 @@ module DPDM_decode_FSM(
     		else if ((PID_rec == ACK_PID)) begin 
     			//ACK_rec = 1;
                 pkt_pid = ACK_PID;
-    			nextState = ACK_R;
+    			nextState = EOP0;
     		end
     		else if ((PID_rec == NAK_PID)) begin 
     			//NAK_rec = 1;
                 pkt_pid = NAK_PID;
-    			nextState = NAK_R;
+    			nextState = EOP0;
     		end
     		else if ((PID_rec == DATA0_PID)) begin 
     			//DATA0_rec = 1;
@@ -69,19 +69,6 @@ module DPDM_decode_FSM(
     		end
     	end
 
-    	ACK_R: begin 
-    		if(se0_rec) begin
-
-    			nextState = EOP0;
-    		end
-    	end
-
-    	NAK_R: begin 
-    		if(se0_rec) begin
-
-    			nextState = EOP0;
-    		end
-    	end
 
     	DATA0_R: begin 
     		if(se0_rec) begin 
