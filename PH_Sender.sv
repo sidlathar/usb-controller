@@ -86,8 +86,17 @@ module PH_Sender
   /*********************** DATA0 PREPARATION FOR CRC16  ***********************/
   logic [71:0] crc16_pkt_in;
   logic crc16_pkt_ready;
-  assign crc16_pkt_in = {data, data0_pid};
   assign crc16_pkt_ready = send_DATA0;
+  // assign crc16_pkt_in = {data, data0_pid};
+
+  // HACKY AF, BUT NEED TO LOAD THE PACKET WHEN WE DO AN OUT TRANSACTION... SO WE LOAD PACKET WHEN WE SEE SEND_OUT
+  always_ff @(posedge clock, posedge reset_n) begin
+    if(~reset_n) begin
+      crc16_pkt_in <= 72'd0;
+    end else if (send_OUT) begin
+      crc16_pkt_in <= {data, data0_pid};
+    end
+  end
 
   /******************* ACK/NAK PREPARATION FOR DPDM_ENCODER *******************/
   logic [7:0] dpdm_pid;
