@@ -39,7 +39,7 @@ module CRC16_Decode_FSM
           crc_flush_cnt_clr, crc_sending,
                  crc_bit_sel, crc_clr, crc_valid} = 36'b0z;
 
-    unique case (currState)
+    case (currState)
       
       IDLE: begin 
         if(~bs_sending) begin

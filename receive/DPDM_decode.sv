@@ -23,7 +23,7 @@ module DPDM_decode_FSM(
      load_data} = 6'b0000_00;
      // pkt_pid = pkt_pid;
 
-    unique case (currState)
+    case (currState)
     	DEAD: begin
     		if(~fsm_start) begin
 

@@ -13,7 +13,7 @@ module BitStuffer_Decode_FSM
   always_comb begin
     {oc_inc, oc_clr, bs_sending} = 3'b000;
 
-    unique case (currState)
+    case (currState)
 
       IDLE : begin
         if (~nrzi_sending) begin

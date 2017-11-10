@@ -10,7 +10,7 @@ module PH_Receiver_fsm(
 	
 	always_comb begin
 		{rec_ACK, rec_NAK, rec_DATA0, data_valid} = 4'b0000;
-		unique case (currState)
+		case (currState)
 			IDLE: begin
 				if(~fsm_start) begin
 					nextState = IDLE;
