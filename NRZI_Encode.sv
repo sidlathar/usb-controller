@@ -3,12 +3,12 @@
 module NRZI_Encode_FSM
   (input logic clock, reset_n,
                in_bit, bs_sending,
-   output logic out_sel, nrzi_sending);
+   output logic out_sel, nrzi_sending, clear);
 
   enum logic {IDLE, WORK} currState, nextState;
 
   always_comb begin
-    {out_sel, nrzi_sending} = 2'b00;
+    {out_sel, nrzi_sending, clear} = 3'b000;
 
     case (currState)
 
@@ -30,6 +30,7 @@ module NRZI_Encode_FSM
 
           nextState = WORK;
         end else begin
+          clear = 1;
           
           nextState = IDLE;
         end
@@ -54,9 +55,11 @@ module NRZI_Encode
    output logic out_bit, nrzi_sending);
 
   // "Flip-flop" to remember the previous bit
-  logic prev_bit;
+  logic prev_bit, clear;
   always_ff @(posedge clock, negedge reset_n) begin
     if(~reset_n) begin
+      prev_bit <= 0;
+    end else if (clear) begin // NEED A CLEAR FOR CONTINUOUS TRANSACTIONS!!!!
       prev_bit <= 0;
     end else begin
       // Load in_bit every clock edge
