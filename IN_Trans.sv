@@ -69,7 +69,7 @@ module IN_Trans
   /************************************ FSM ***********************************/
 
   enum logic [2:0] {IDLE, WAIT_SEND_IN, WAIT_RESPONSE,
-                    WAIT_SEND_NAK} currState, nextState;
+                    WAIT_SEND_NAK, WAIT_SEND_ACK} currState, nextState;
 
   // NS and output logic
   always_comb begin
@@ -133,11 +133,37 @@ module IN_Trans
         end else if (rec_DATA0 && data_valid) begin
           // Transaction succeeded
           send_ACK = 1;
-          done = 1;
-          success = 1;
+          // done = 1;
+          // success = 1;
           data_reg_ld = 1; // Load result for the testbench ?
 
+          // nextState = IDLE;
+          nextState = WAIT_SEND_ACK;
+        end
+      end
+
+      WAIT_SEND_ACK : begin
+        if (~sent) begin
+          sending = 1;
+
+          nextState = WAIT_SEND_ACK;
+        end else begin
+          done = 1;
+          success = 1;
+
           nextState = IDLE;
+        end
+      end
+
+      WAIT_SEND_NAK : begin
+        if (~sent) begin
+          sending = 1;
+
+          nextState = WAIT_SEND_NAK;
+        end else begin
+          clk_cnt_clr = 1;
+
+          nextState = WAIT_RESPONSE;
         end
       end
     endcase // currState
