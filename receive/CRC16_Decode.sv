@@ -77,6 +77,8 @@ module CRC16_Decode_FSM
           crc_flush_cnt_inc = 1;
           out_sel = 1;
           crc_bit_sel = crc_flush_cnt;
+          crc_clr = 1;
+          crc_flush_cnt_clr = 1;
           //crc_sending = 1;
           crc_valid = (capture_residue == 16'h800d);
           
@@ -259,7 +261,7 @@ module CRC16_Decode
   // assign capture_residue = (bs_sending)? crc_result: capture_residue;
   always_ff @(posedge clock, negedge reset_n) begin
     if (~reset_n)
-      capture_residue <= 16'bz;
+      capture_residue <= 16'b0;
     else if (bs_sending)
       capture_residue <= crc_result;
   end
