@@ -5,7 +5,8 @@ module PH_Receiver_fsm(
 				NAK_rec,
 	output logic rec_ACK, rec_NAK, rec_DATA0, data_valid);
 
-	enum logic [2:0] {IDLE, RECEIVE, DATA_RECEIVE} currState, nextState;
+	enum logic [2:0] {IDLE, RECEIVE, DATA_RECEIVE, EOP_1,
+									  EOP_2} currState, nextState;
 
 	
 	always_comb begin
@@ -52,11 +53,22 @@ module PH_Receiver_fsm(
 					nextState = IDLE;
 				end
 				else if(~crc_valid) begin
-					rec_DATA0 = 1;
-					data_valid = 0;
 
-					nextState = IDLE;
+					nextState = EOP_1;
 				end
+			end
+
+			EOP_1 : begin
+				// Need to wait to finish receiving the EOP from device
+
+				nextState = EOP_2;
+			end
+
+			EOP_2 : begin
+				rec_DATA0 = 1;
+				data_valid = 0;
+
+				nextState = IDLE;
 			end
 		endcase
 	end
