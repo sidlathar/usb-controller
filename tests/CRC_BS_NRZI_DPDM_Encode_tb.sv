@@ -64,16 +64,16 @@ module BS_NRZI_DPDM_Send_tb;
   //  output logic out_bit, nrzi_sending);
 
   // DPDM MODULE INSTANTIATION
-  logic DP_out, DM_out, out_done;
+  logic DP_out, DM_out, sent;
   logic ph_out_bit, ph_sending; // NOT USING
   DPDM_Encode dpdm (
              .nrzi_in_bit(nrzi_out_bit), .nrzi_sending(nrzi_sending),
              .ph_in_bit(ph_out_bit), .ph_sending(ph_sending),
-             .DP(DP_out), .DM(DM_out), .out_done(out_done), .*);
+             .DP(DP_out), .DM(DM_out), .sent(sent), .*);
   // (input  logic clock, reset_n,
   //               nrzi_in_bit, nrzi_sending,
   //               ph_in_bit, ph_sending,
-  //  output logic DP, DM, out_done);
+  //  output logic DP, DM, sent);
 
 //   // TESTING RECEIVING PACKET
   logic [119:0] pkt_received;
@@ -87,12 +87,13 @@ module BS_NRZI_DPDM_Send_tb;
   logic [71:0] test_pkt;
   // assign test_pkt = 72'hfff1000000000000_C3;
   // assign test_pkt = 72'h40aa11b7682df6d8_C3;
-  assign test_pkt = 72'hfef811b7682df6d8_C3;
+  // assign test_pkt = 72'hfef811b7682df6d8_C3;
+  assign test_pkt = 72'he46700001b981111_C3;
 
 
   initial begin
-    $monitor ($stime,, "pkt_in: %h |  DP: %b, DM: %b, out_done: %b | ANS: %b",
-                     test_pkt, DP_out, DM_out, out_done, pkt_received);
+    $monitor ($stime,, "pkt_in: %h |  DP: %b, DM: %b, sent: %b | ANS: %b",
+                     test_pkt, DP_out, DM_out, sent, pkt_received);
     clock = 0;
     reset_n = 0;
     reset_n <= #1 1;
