@@ -3,12 +3,12 @@
 module NRZI_decoder_FSM
   (input logic clock, reset_n,
                in_bit, dpdm_sending,
-   output logic out_sel, nrzi_sending, clear);
+   output logic nrzi_sending, clear);
 
   enum logic {IDLE, WORK} currState, nextState;
 
   always_comb begin
-    {out_sel, nrzi_sending, clear} = 3'b000;
+    {nrzi_sending, clear} = 2'b00;
 
     case (currState)
 
@@ -16,7 +16,6 @@ module NRZI_decoder_FSM
         if (~dpdm_sending)
           nextState = IDLE;
         else begin
-          out_sel = 0;
           nrzi_sending = 1;
 
           nextState = WORK;
@@ -25,7 +24,6 @@ module NRZI_decoder_FSM
 
       WORK : begin
         if (dpdm_sending) begin
-          out_sel = 1;
           nrzi_sending = 1;
 
           nextState = WORK;
@@ -70,25 +68,14 @@ module NRZI_decoder
     end
   end
 
-  // Logic for NRZI_bit
-  logic NRZI_bit;
+  // Logic for out_bit (ALWAYS NRZI_bit in the decode)
   always_comb begin
     if (in_bit)
       // Same prev bit when input is 1
-      NRZI_bit = prev_bit;
+      out_bit = prev_bit;
     else
       // Flips prev bit when input is 0
-      NRZI_bit = ~prev_bit;
-  end
-
-  // Mux the in_bit (need the first bit to be same) and NRZI_bit
-  logic out_sel;
-  always_comb begin
-    if (out_sel)
-      out_bit = NRZI_bit;
-    else
-      //out_bit = prev_bit;
-      out_bit = 0;
+      out_bit = ~prev_bit;
   end
 
   // THE FSM
