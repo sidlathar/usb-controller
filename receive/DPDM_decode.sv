@@ -161,7 +161,7 @@ module DPDM_decode(
 
 	always_comb begin
 		{out_bit, se0_rec} = 2'bz0;
-		unique case({DP_in, DM_in})
+		case({DP_in, DM_in})
 			2'b10: out_bit = 1'b1;
 			2'b01: out_bit = 1'b0;
 			2'b00: begin

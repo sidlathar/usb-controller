@@ -32,7 +32,7 @@ module RW_FSM
   logic [1:0] out_data_sel; // 0 -> read_addr, 1 -> write_addr, 2 -> write_data
   always_comb begin
     out_data = 64'dx; // Default to X's
-    unique case (out_data_sel)
+    case (out_data_sel)
       2'd0 : out_data = read_addr;
       2'd1 : out_data = write_addr;
       2'd2 : out_data = write_data;
