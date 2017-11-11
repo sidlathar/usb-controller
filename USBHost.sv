@@ -20,14 +20,14 @@ module USBHost (
         DP_in, DM_in;
   logic [63:0] read_data;
   RW_FSM rw (.DP_in(DP_in), .DM_in(DM_in), .*);
-  // module RW_FSM
   //   (input  logic clock, reset_n,
   //   // Inputs from USBHost
   //    input  logic        DP_in, DM_in, read_start, write_start,
   //    input  logic [15:0] write_mempage, read_mempage,
   //    input  logic [63:0] write_data,
   //   // Outputs from USBHost
-  //    output logic DP_out, DM_out, sending, read_success, write_success, finished,
+  //    output logic DP_out, DM_out, sending, read_success, write_success,
+  //                 finished,
   //    output logic [63:0] read_data);
 
 
@@ -38,11 +38,6 @@ module USBHost (
   assign DM_in = (sending) ? 1'bz : wires.DM; // Another tristate driver
 
   task prelabRequest();
-    // send_OUT <= 1; @(posedge clock); send_OUT <= 0; @(posedge clock);
-    // send_IN <= 1; @(poswwedge clock); send_IN <= 0; @(posedge clock);
-    // send_DATA0 <= 1; @(posedge clock); send_DATA0 <= 0; @(posedge clock);
-    // send_ACK <= 1; @(posedge clock); send_ACK <= 0; @(posedge clock);
-    // send_NAK <= 1; @(posedge clock); send_NAK <= 0; @(posedge clock);
     write_mempage <= 16'd0;
     write_data <= 64'd0;
 
@@ -64,14 +59,10 @@ module USBHost (
       output logic [63:0] data, // Vector of bytes to read
       output logic success);
 
-
       read_mempage <= mempage;
       read_start <= 1;
       @ (posedge clock);
       write_start <= 0;
-      @ (posedge clock);
-
-
       @(posedge finished);
       #1 wait(finished);
       success <= read_success;
@@ -87,29 +78,16 @@ module USBHost (
     ( input logic [15:0] mempage, // Page to write
       input logic [63:0] data, // Vector of bytes to write
       output logic success);
-
       
       write_mempage <= mempage;
       write_data <= data;
-
       write_start <= 1;
       @ (posedge clock);
       write_start <= 0;
-      @ (posedge clock);
-
-
-
       @(posedge finished);
       #1 wait(finished);
       success <= write_success;
       @ (posedge clock);
-
-      // while (~finished) begin
-      //   @ (posedge clock);
-      // end
-      // success = write_success;
-      // @ (posedge clock);
-
 
   endtask : writeData
 
