@@ -1,5 +1,10 @@
 `include "USBPkg.pkg"
 
+/*
+ * Samuel Kim (ssk1) and Siddhanth Lathar (slathar)
+ * 18-341 USB
+ */
+
 // Wrapper for USB bus states. Notice that enum Z can only be driven, not read
 typedef enum logic [1:0]
   {BS_J = 2'b10, BS_K = 2'b01, BS_SE0 = 2'b00, BS_SE1 = 2'b11, BS_NC = 2'bzz}
@@ -51,7 +56,7 @@ module USBHost (
   endtask : prelabRequest
 
   // Host sends mempage to thumb drive using a READ (OUT->DATA0->OUT->DATA0)
-  // transaction, and then receives data from it. This task should return both the
+  // transaction, and then receives data from it. This task should return both
   // data and the transaction status, successful or unsuccessful, to the caller.
   task readData
     ( input logic [15:0] mempage, // Page to read
