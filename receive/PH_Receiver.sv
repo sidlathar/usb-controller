@@ -22,7 +22,7 @@ module PH_Receiver_fsm(
         end
       end
 
-      RECEIVE: begin
+      RECEIVE: begin  //RECEVING A PACKET, ASSERT (rec_*) SIGNALS WHEN PID RECOGNIZED
         if(ACK_rec) begin
           rec_ACK = 1;
 
@@ -40,7 +40,7 @@ module PH_Receiver_fsm(
         end
       end
 
-      DATA_RECEIVE: begin
+      DATA_RECEIVE: begin   //RECEIVE DATA0 UNTIL SE0 IS RECEIVED
         if(crc_valid === 1'bz) begin
 
           nextState = DATA_RECEIVE;

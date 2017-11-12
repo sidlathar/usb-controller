@@ -14,7 +14,7 @@ module BitStuffer_Decode_FSM
 
     case (currState)
 
-      IDLE : begin
+      IDLE : begin   //WAIT FOR NRZI TO SEND DATA
         if (~nrzi_sending) begin
           nextState = IDLE;
         end
@@ -27,12 +27,13 @@ module BitStuffer_Decode_FSM
         end
       end
 
-      COUNT_ONES : begin
+      COUNT_ONES : begin   //COUNT ONES AND REMOVE 0 AFTER SIX 1s
         if(~nrzi_sending) begin
           bs_sending  = 0;
 
           nextState = IDLE;
         end
+          //FIVE 1s AND WE SEE A ONE MEANS NEXT 0 SHOULD BE REMOVED
         else if (in_bit == 1 && ones_cnt == 32'd5 && nrzi_sending) begin
           oc_clr = 1;
           bs_sending = 1;
@@ -53,7 +54,7 @@ module BitStuffer_Decode_FSM
         end
       end
 
-      REMOVE_ZERO : begin   // SKIP ZERO AND PAUSE SENDING
+      REMOVE_ZERO : begin   // REMOVE ZERO AND PAUSE SENDING
         bs_sending = 0;
 
         nextState = RESUME_SEND;
@@ -62,7 +63,8 @@ module BitStuffer_Decode_FSM
       RESUME_SEND : begin
         if (nrzi_sending) begin
           bs_sending = 1;
-          if (in_bit)
+          //WHEN COMING BACK FROM REMOVING ZERO KEEP IN MIND OF THE BIT JUST RECIEVE
+          if (in_bit) 
             oc_inc = 1;
 
           nextState = COUNT_ONES;

@@ -35,8 +35,9 @@ module CRC16_Decode_FSM
 
     case (currState)
       
-      IDLE: begin 
+      IDLE: begin  //WAIT FOR bs_sending TO START CALCULATING
         if(~bs_sending) begin
+
           nextState = IDLE;
         end else begin
           crc_do = 1;
@@ -48,7 +49,7 @@ module CRC16_Decode_FSM
         end
       end
 
-      CALC_CRC: begin
+      CALC_CRC: begin  
         if(bs_sending) begin
           crc_do = 1;
           out_sel = 0;
@@ -56,7 +57,9 @@ module CRC16_Decode_FSM
 
           nextState = CALC_CRC;
         end else begin
-          nextState = PAUSE_CALC_CRC;
+          //STUFFED BIT NEEDS TO BE REMOVED, STOP CRC CALCULATION
+
+          nextState = PAUSE_CALC_CRC;  
         end
       end
 
@@ -66,7 +69,7 @@ module CRC16_Decode_FSM
           out_sel = 0;
           crc_sending = 1;
 
-          nextState = CALC_CRC;
+          nextState = CALC_CRC; //BACK TO CALCULATION
         end else begin
           crc_flush_cnt_inc = 1;
           out_sel = 1;
@@ -74,7 +77,7 @@ module CRC16_Decode_FSM
           crc_clr = 1;
           crc_flush_cnt_clr = 1;
 
-          crc_valid = (capture_residue == 16'h800d);
+          crc_valid = (capture_residue == 16'h800d); //CHECK IF RECEIVED DATA0 WAS VALID
           
           nextState = IDLE;
         end

@@ -3,7 +3,7 @@
 module DPDM_decode_FSM
   (input  logic       clock, reset_n,
                       sync_rec, se0_rec, in_bit, fsm_start,
-   input  logic [2:0] PID_rec,
+   input  logic [2:0] PID_rec,          //Ones hot signak for what PID receieve
    output logic       dpdm_sending, ACK_rec, NAK_rec, DATA0_rec,
                       rec_start, load_data);
 
@@ -16,7 +16,7 @@ module DPDM_decode_FSM
   assign NAK_PID = 3'b010;
   assign DATA0_PID = 3'b100;
 
-  logic [2:0] pkt_pid;
+  logic [2:0] pkt_pid;  // Temporary hold for PID_rec
 
   always_comb begin
     {dpdm_sending, ACK_rec, NAK_rec, DATA0_rec, rec_start,
@@ -35,7 +35,7 @@ module DPDM_decode_FSM
         end
       end
 
-      WAITSYNC: begin
+      WAITSYNC: begin  //WAIT FOR SYNC TO PASS
         if(~sync_rec) begin
           nextState = WAITSYNC;
         end else begin
@@ -43,7 +43,7 @@ module DPDM_decode_FSM
         end
       end
 
-      WAITPID: begin 
+      WAITPID: begin   //REGISTER THE PID RECEIVED
         if(PID_rec == 3'b000) begin 
           nextState = WAITPID;
         end else if (PID_rec == ACK_PID) begin 
@@ -63,9 +63,10 @@ module DPDM_decode_FSM
       end
 
 
-      DATA0_R: begin 
-        if (se0_rec) begin 
+      DATA0_R: begin  //SEND DATA0 FOR DECODING
+        if (se0_rec) begin  //STARTED RECEIVING EOP
           load_data = 1;
+
           nextState = EOP0;
         end else begin 
           dpdm_sending = 1;
@@ -76,15 +77,17 @@ module DPDM_decode_FSM
 
       EOP0: begin
         if (se0_rec)
+
           nextState = EOP1;
       end
 
       EOP1: begin
         if (in_bit) 
+
           nextState = EOP2;
       end
 
-      EOP2: begin
+      EOP2: begin  // ASSERT SIGNALS BASED ON WHAT PACKET WAS RECEIEVD
         case (pkt_pid) 
           3'b001: ACK_rec = 1;
           3'b010: NAK_rec = 1;
@@ -93,7 +96,6 @@ module DPDM_decode_FSM
 
         nextState  = DEAD;
       end
-
     endcase
   end
 
@@ -114,13 +116,16 @@ module DPDM_decode(
 
   logic sync_rec, se0_rec, load_matchReg, clr_cnt, fsm_start;
   logic [2:0] PID_rec;
-  logic [7:0] match_val;
+  logic [7:0] match_val; //REGISTER TO HOLD 8 INCOMING BITS AT A TIME TO...
+                          //...MATCH AGAINST HARD CODED PIDS AND SYNC
 
   DPDM_decode_FSM fsm (.in_bit(out_bit), .*);
 
+  //MATCHREG REGISTER
   SIPO_Register_Right matchReg (.D(out_bit), .load(load_matchReg), 
-                  .Q(match_val),  .*);
+                  .Q(match_val),  .*); 
 
+    //host_sending tells if sender side is sending messege
     always_comb begin
       if ((host_sending) || (DP_in === 1'bz && DM_in === 1'bz)) begin
         fsm_start = 0;
@@ -129,7 +134,7 @@ module DPDM_decode(
       end
     end
 
-  always_ff @(posedge clock, negedge reset_n) begin
+  always_ff @(posedge clock, negedge reset_n) begin // LOADING FOR MATCHREG 
     if(~reset_n) begin
       load_matchReg <= 0;
     end else begin
@@ -137,7 +142,7 @@ module DPDM_decode(
     end
   end
 
-  always_comb begin
+  always_comb begin //ASSIGN OUT BIT BASED ON DP, DM
     {out_bit, se0_rec} = 2'bz0;
     case({DP_in, DM_in})
       2'b10 : out_bit = 1'b1;
@@ -150,7 +155,7 @@ module DPDM_decode(
     endcase
   end
 
-  always_comb begin
+  always_comb begin //HARDCODED PIDS
     {PID_rec,sync_rec} = 4'b0000;
     case (match_val)
       8'b0010_1010: sync_rec = 1;  //SYNC

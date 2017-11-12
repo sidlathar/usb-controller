@@ -12,7 +12,7 @@ module NRZI_decoder_FSM
 
     case (currState)
 
-      IDLE : begin
+      IDLE : begin //WAIT FOR DPDM SEND DATA
         if (~dpdm_sending)
           nextState = IDLE;
         else begin
@@ -22,7 +22,7 @@ module NRZI_decoder_FSM
         end
       end
 
-      WORK : begin
+      WORK : begin  //UN-NRZI-DECODE INCOMING BITSTREAM
         if (dpdm_sending) begin
           nrzi_sending = 1;
 
