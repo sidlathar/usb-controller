@@ -28,12 +28,6 @@ module CRC16_Decode_FSM
   enum logic [3:0] {IDLE,  CALC_CRC, PAUSE_CALC_CRC, FLUSH_CRC} currState, 
                   nextState;
 
-  // CONSTANTS
-  logic [31:0] PID_LEN, PKT_LEN, CRC16_LEN;
-  assign PID_LEN = 32'd8;
-  assign PKT_LEN = 32'd72;
-  assign CRC16_LEN = 32'd16;
-
   always_comb begin
     {crc_do, out_sel, crc_flush_cnt_inc, 
           crc_flush_cnt_clr, crc_sending,
@@ -79,29 +73,13 @@ module CRC16_Decode_FSM
           crc_bit_sel = crc_flush_cnt;
           crc_clr = 1;
           crc_flush_cnt_clr = 1;
-          //crc_sending = 1;
+
           crc_valid = (capture_residue == 16'h800d);
-          
           
           nextState = IDLE;
         end
       end
 
-      // FLUSH_CRC: begin 
-      //   if(crc_flush_cnt != 32'd15) begin
-      //     crc_flush_cnt_inc = 1;
-      //     out_sel = 1;
-      //     crc_bit_sel = crc_flush_cnt;
-      //     crc_sending = 1;
-
-      //     nextState = FLUSH_CRC;
-      //   end else begin
-      //     nextState = IDLE;
-      //     crc_clr = 1;
-      //     crc_flush_cnt_clr = 1;
-      //   end
-      // end
-      
     endcase // currState
 
   end // always_comb
@@ -269,7 +247,7 @@ module CRC16_Decode
  /*********************************** FSM ***********************************/
  
  CRC16_Decode_FSM fsm (.crc_valid(crc_valid), .*);
- DATA0_REG d0reg(.D(out_bit), .Q(data0_plus_crc), .load(crc_sending), .*); //W = 64
+ DATA0_REG d0reg (.D(out_bit), .Q(data0_plus_crc), .load(crc_sending), .*);
  // (input  logic        clock, reset_n,
  //                      pkt_ready, // coming from protocol handler
  //  input  logic [31:0] pkt_len, pkt_bit_count, crc_bit_count,

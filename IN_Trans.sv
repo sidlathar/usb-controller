@@ -127,15 +127,13 @@ module IN_Trans
           // Data invalid, send a NAK and wait again
           send_NAK = 1;
           invalid_cnt_inc = 1;
-          data_reg_ld = 1; // Load result for the testbench ?
+          data_reg_ld = 1;
 
           nextState = WAIT_SEND_NAK;
         end else if (rec_DATA0 && data_valid) begin
           // Transaction succeeded
           send_ACK = 1;
-          // done = 1;
-          // success = 1;
-          data_reg_ld = 1; // Load result for the testbench ?
+          data_reg_ld = 1;
 
           // nextState = IDLE;
           nextState = WAIT_SEND_ACK;

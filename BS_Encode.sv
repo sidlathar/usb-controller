@@ -124,8 +124,7 @@ endmodule : BS_Encode_FSM
 
 module BS_Encode
   (input  logic clock, reset_n,
-                crc5_valid_out, crc5_in_bit,
-                crc16_valid_out, crc16_in_bit,                
+                crc5_valid_out, crc5_in_bit, crc16_valid_out, crc16_in_bit,                
    output logic out_bit, bs_ready, bs_sending);
 
   // HANDLING CRC5 / CRC 16 SMOOTHLY

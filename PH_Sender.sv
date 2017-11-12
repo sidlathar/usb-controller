@@ -87,9 +87,8 @@ module PH_Sender
   logic [71:0] crc16_pkt_in;
   logic crc16_pkt_ready;
   assign crc16_pkt_ready = send_DATA0;
-  // assign crc16_pkt_in = {data, data0_pid};
 
-  // HACKY AF, BUT NEED TO LOAD THE PACKET WHEN WE DO AN OUT TRANSACTION... SO WE LOAD PACKET WHEN WE SEE SEND_OUT
+  // Load the packet when we do an out transaction..
   always_ff @(posedge clock, posedge reset_n) begin
     if(~reset_n) begin
       crc16_pkt_in <= 72'd0;

@@ -4,8 +4,7 @@ module BitStuffer_Decode_FSM
   (input  logic        clock, reset_n,
                        nrzi_sending, in_bit,
    input  logic [31:0] ones_cnt, bit_cnt,
-   output logic         oc_inc, oc_clr,
-                       bs_sending);
+   output logic        oc_inc, oc_clr, bs_sending);
 
   enum logic [2:0] {IDLE, COUNT_ONES, REMOVE_ZERO,
                     RESUME_SEND} currState, nextState;
@@ -63,9 +62,9 @@ module BitStuffer_Decode_FSM
       RESUME_SEND : begin
         if (nrzi_sending) begin
           bs_sending = 1;
-          if(in_bit == 1) begin
+          if (in_bit)
             oc_inc = 1;
-          end
+
           nextState = COUNT_ONES;
         end
         else begin
@@ -111,7 +110,6 @@ module BitStuffer_decode
       ones_cnt <= ones_cnt + 1;
     end
   end
-
 
   // MUX THE BITSTREAM, OR CHOOSE TO SEND A BITSTUFF (0)
   always_comb begin

@@ -51,7 +51,7 @@ module FIFO  (
     if (~reset_n) begin
       size <= 4'd8;
       Q <= 8'b0010_1010; // Hard-coded SYNC
-    end else if (clear) begin // NEED TO ADD A CLEAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    end else if (clear) begin
       size <= 4'd8;
       Q <= 8'b0010_1010; // Hard-coded SYNC
     end else begin

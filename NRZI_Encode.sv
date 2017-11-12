@@ -59,7 +59,7 @@ module NRZI_Encode
   always_ff @(posedge clock, negedge reset_n) begin
     if(~reset_n) begin
       prev_bit <= 0;
-    end else if (clear) begin // NEED A CLEAR FOR CONTINUOUS TRANSACTIONS!!!!
+    end else if (clear) begin
       prev_bit <= 0;
     end else begin
       // Load in_bit every clock edge

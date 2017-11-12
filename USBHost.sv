@@ -15,8 +15,7 @@ module USBHost (
   logic [15:0] write_mempage, read_mempage;
   logic [63:0] write_data;
   // Outputs
-  logic DP_out, DM_out, sending,
-        read_success, write_success, finished,
+  logic DP_out, DM_out, sending, read_success, write_success, finished,
         DP_in, DM_in;
   logic [63:0] read_data;
   RW_FSM rw (.DP_in(DP_in), .DM_in(DM_in), .*);
@@ -78,7 +77,7 @@ module USBHost (
     ( input logic [15:0] mempage, // Page to write
       input logic [63:0] data, // Vector of bytes to write
       output logic success);
-      
+
       write_mempage <= mempage;
       write_data <= data;
       write_start <= 1;

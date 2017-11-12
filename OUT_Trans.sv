@@ -128,7 +128,6 @@ module OUT_Trans
           done = 1;
           success = 1;
 
-          // nextState = IDLE;
           // EDGE CASE NEED TO SKIP IDLE
           if (~start) begin
             nextState = IDLE;
